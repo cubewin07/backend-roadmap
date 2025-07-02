@@ -168,18 +168,19 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex bg-base-200">
-      {/* Sidebar */}
-      <aside className="w-64 bg-base-100 shadow-lg p-4 flex flex-col">
-        <h2 className="text-xl font-bold mb-6">Backend Roadmap</h2>
-        <ul className="menu">
+    <div className="flex min-h-screen bg-base-200 ">
+      <aside className="w-64 flex-shrink-0 fixed top-0 left-0 h-full w-64 bg-base-100 shadow-lg border-r border-base-300 p-6 flex flex-col z-20">
+        <h2 className="text-2xl font-bold mb-8 tracking-tight">
+          Backend Roadmap
+        </h2>
+        <ul className="menu space-y-2">
           {roadmap.map((sec, idx) => (
             <li key={sec.section}>
               <button
-                className={`w-full text-left px-2 py-2 rounded-lg mb-2 transition-colors ${
+                className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors text-base ${
                   selectedSection === idx
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-foreground"
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "bg-card text-foreground hover:bg-base-200"
                 }`}
                 onClick={() => setSelectedSection(idx)}
               >
@@ -189,24 +190,23 @@ export default function App() {
           ))}
         </ul>
       </aside>
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <h1 className="text-2xl font-bold mb-6">
+      <main className="flex-1 ml-64 h-full">
+        <h1 className="text-3xl font-bold mb-10 text-center tracking-tight">
           {roadmap[selectedSection].section}
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {roadmap[selectedSection].children.map((child, childIdx) => {
             const progress = getSubtaskProgress(child);
             return (
               <div
                 key={child.section}
-                className="card bg-base-100 shadow-xl border border-base-200 p-6 flex flex-col"
+                className="card bg-base-100 shadow border border-base-200 p-6 flex flex-col h-full min-h-[340px]"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="card-title text-lg font-semibold">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="card-title text-lg font-semibold tracking-tight">
                     {child.section}
                   </h2>
-                  <div className="w-32">
+                  <div className="w-28">
                     <Progress value={progress} />
                     <div className="text-xs text-right mt-1">{progress}%</div>
                   </div>
@@ -232,7 +232,7 @@ export default function App() {
                         />
                         <label
                           htmlFor={`task-${childIdx}-${taskIdx}`}
-                          className="flex-1 cursor-pointer"
+                          className="flex-1 cursor-pointer text-base"
                         >
                           {task.text}
                         </label>
