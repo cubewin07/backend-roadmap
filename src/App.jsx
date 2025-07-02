@@ -1,145 +1,73 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Progress } from "./components/ui/progress";
-import { Toaster, toast } from "sonner";
-import {
-  Pencil,
-  Calendar as CalendarIcon,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "./components/ui/dialog";
-import { Input } from "./components/ui/input";
-import { Textarea } from "./components/ui/textarea";
 import { Calendar } from "./components/ui/calendar";
-import { Badge } from "./components/ui/badge";
 import { formatDate, getDeadlineStatus } from "./lib/utils";
+import { Plus, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
 import "./App.css";
 
 const INITIAL_ROADMAP = [
   {
     section: "Fundamentals",
-    collapsed: false,
     children: [
       {
         section: "Java Language & OOP Fundamentals",
-        items: [
+        tasks: [
           {
             text: "Syntax, control structures, exception handling",
             checked: false,
+            deadline: "",
           },
           {
             text: "Classes, objects, inheritance, polymorphism",
             checked: false,
-          },
-          { text: "Interfaces, abstract classes", checked: false },
-          {
-            text: "Collections (List, Map, Set, Stack, Queue)",
-            checked: false,
-          },
-          {
-            text: "Java 8+ features: Lambdas, Streams, Optional",
-            checked: false,
+            deadline: "",
           },
         ],
       },
       {
         section: "DSA in Java",
-        items: [
+        tasks: [
           {
-            text: "Re-implement CP knowledge in Java using: ArrayList, LinkedList, HashMap, TreeMap, HashSet, PriorityQueue",
+            text: "Re-implement CP knowledge in Java",
             checked: false,
+            deadline: "",
           },
-          {
-            text: "Solve LeetCode or HackerRank problems in Java to get used to syntax",
-            checked: false,
-          },
-        ],
-      },
-      {
-        section: "General Fundamentals",
-        items: [
-          { text: "Version control with Git", checked: false },
-          { text: "Basic networking concepts", checked: false },
         ],
       },
     ],
   },
   {
     section: "Databases",
-    collapsed: false,
     children: [
       {
         section: "Relational Databases",
-        items: [
-          { text: "PostgreSQL", checked: false },
-          { text: "MySQL", checked: false },
-        ],
-      },
-      {
-        section: "NoSQL Databases",
-        items: [
-          { text: "MongoDB", checked: false },
-          { text: "Redis", checked: false },
-        ],
-      },
-      {
-        section: "ORMs and Query Builders",
-        items: [
-          { text: "Learn an ORM (e.g., Hibernate, JPA)", checked: false },
-        ],
+        tasks: [{ text: "PostgreSQL", checked: false, deadline: "" }],
       },
     ],
   },
   {
     section: "APIs",
-    collapsed: false,
     children: [
       {
         section: "RESTful API Design",
-        items: [{ text: "Design RESTful endpoints", checked: false }],
-      },
-      {
-        section: "Authentication & Authorization",
-        items: [{ text: "Implement JWT or OAuth", checked: false }],
-      },
-      {
-        section: "API Documentation",
-        items: [{ text: "Swagger/OpenAPI", checked: false }],
+        tasks: [
+          { text: "Design RESTful endpoints", checked: false, deadline: "" },
+        ],
       },
     ],
   },
   {
     section: "DevOps & Deployment",
-    collapsed: false,
     children: [
       {
         section: "Containerization",
-        items: [{ text: "Docker", checked: false }],
-      },
-      {
-        section: "CI/CD",
-        items: [{ text: "Set up CI/CD pipeline", checked: false }],
-      },
-      {
-        section: "Cloud Providers",
-        items: [
-          { text: "AWS", checked: false },
-          { text: "GCP", checked: false },
-          { text: "Azure", checked: false },
-        ],
+        tasks: [{ text: "Docker", checked: false, deadline: "" }],
       },
     ],
   },
 ];
 
-const STORAGE_KEY = "roadmap-progress-v2";
+const STORAGE_KEY = "roadmap-progress-v3";
 
 function loadProgress() {
   try {
@@ -155,232 +83,229 @@ function saveProgress(progress) {
 
 export default function App() {
   const [roadmap, setRoadmap] = useState(loadProgress());
-  const lastUnchecked = useRef(null);
-  // Note/Deadline dialog state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editItemIdx, setEditItemIdx] = useState(null);
-  const [noteDraft, setNoteDraft] = useState("");
+  const [selectedSection, setSelectedSection] = useState(0);
+  const [newTask, setNewTask] = useState("");
+  const [addingTaskIdx, setAddingTaskIdx] = useState(null);
   const [deadlineDraft, setDeadlineDraft] = useState("");
 
   useEffect(() => {
     saveProgress(roadmap);
   }, [roadmap]);
 
-  // Checkbox logic
-  const handleCheck = (sectionIdx, itemIdx) => {
-    const isCurrentlyChecked =
-      !!roadmap[sectionIdx].children[itemIdx].items[itemIdx].checked;
-    setRoadmap((prev) => {
-      const updated = prev.map((section, sIdx) => ({
-        ...section,
-        children: section.children.map((child, cIdx) => ({
-          ...child,
-          items: child.items.map((item, iIdx) =>
-            sIdx === sectionIdx && cIdx === itemIdx && iIdx === itemIdx
-              ? { ...item, checked: !Boolean(item.checked) }
-              : item
-          ),
-        })),
-      }));
-      return updated;
-    });
-    if (isCurrentlyChecked) {
-      lastUnchecked.current = { sectionIdx, itemIdx };
-      toast(
-        <span>
-          Item unchecked.{" "}
-          <button className="btn btn-link btn-xs" onClick={undoUncheck}>
-            Undo
-          </button>
-        </span>,
-        { duration: 4000 }
-      );
-    }
-  };
-
-  const undoUncheck = () => {
-    if (lastUnchecked.current) {
-      const { sectionIdx, itemIdx } = lastUnchecked.current;
-      setRoadmap((prev) => {
-        const updated = prev.map((section, sIdx) => ({
-          ...section,
-          children: section.children.map((child, cIdx) => ({
-            ...child,
-            items: child.items.map((item, iIdx) =>
-              sIdx === sectionIdx && cIdx === itemIdx && iIdx === itemIdx
-                ? { ...item, checked: true }
-                : item
-            ),
-          })),
-        }));
-        return updated;
-      });
-      lastUnchecked.current = null;
-      toast.success("Undo successful!");
-    }
-  };
-
-  // Open dialog for editing note/deadline
-  const openEditDialog = (itemIdx) => {
-    setEditItemIdx(itemIdx);
-    setNoteDraft(roadmap[itemIdx].children[itemIdx].items[itemIdx].note || "");
-    setDeadlineDraft(
-      roadmap[itemIdx].children[itemIdx].items[itemIdx].deadline || ""
-    );
-    setDialogOpen(true);
-  };
-
-  // Save note/deadline for the correct item in the selected section
-  const saveNoteDeadline = () => {
-    setRoadmap((prev) => {
-      const updated = prev.map((section, sIdx) => {
-        if (sIdx !== itemIdx) return section;
+  // Add new task to a subtask
+  const handleAddTask = (childIdx) => {
+    if (!newTask.trim()) return;
+    setRoadmap((prev) =>
+      prev.map((sec, sIdx) => {
+        if (sIdx !== selectedSection) return sec;
         return {
-          ...section,
-          children: section.children.map((child, cIdx) => ({
-            ...child,
-            items: child.items.map((item, iIdx) =>
-              iIdx === editItemIdx
-                ? { ...item, note: noteDraft, deadline: deadlineDraft }
-                : item
-            ),
-          })),
+          ...sec,
+          children: sec.children.map((child, cIdx) => {
+            if (cIdx !== childIdx) return child;
+            return {
+              ...child,
+              tasks: [
+                ...child.tasks,
+                { text: newTask, checked: false, deadline: deadlineDraft },
+              ],
+            };
+          }),
         };
-      });
-      return updated;
-    });
-    setDialogOpen(false);
+      })
+    );
+    setNewTask("");
+    setDeadlineDraft("");
+    setAddingTaskIdx(null);
   };
 
-  // Progress calculation
-  const totalItems = roadmap.reduce(
-    (sum, sec) =>
-      sum + sec.children.reduce((sum, child) => sum + child.items.length, 0),
-    0
-  );
-  const completedItems = roadmap.reduce(
-    (sum, sec) =>
-      sum +
-      sec.children.reduce(
-        (sum, child) => sum + child.items.filter((item) => item.checked).length,
-        0
-      ),
-    0
-  );
-  const percent = Math.round((completedItems / totalItems) * 100);
+  // Toggle task checked
+  const handleCheck = (childIdx, taskIdx) => {
+    setRoadmap((prev) =>
+      prev.map((sec, sIdx) => {
+        if (sIdx !== selectedSection) return sec;
+        return {
+          ...sec,
+          children: sec.children.map((child, cIdx) => {
+            if (cIdx !== childIdx) return child;
+            return {
+              ...child,
+              tasks: child.tasks.map((task, tIdx) =>
+                tIdx === taskIdx ? { ...task, checked: !task.checked } : task
+              ),
+            };
+          }),
+        };
+      })
+    );
+  };
 
-  // Toast for items due today
-  useEffect(() => {
-    roadmap.forEach((section) => {
-      section.children.forEach((child) => {
-        child.items.forEach((item) => {
-          if (
-            item.deadline &&
-            getDeadlineStatus(item.deadline) === "today" &&
-            !item.checked
-          ) {
-            toast(
-              <span>
-                <AlertCircle className="inline w-4 h-4 text-warning mr-1" />"
-                {item.text}" is due today!
-              </span>,
-              { duration: 5000 }
-            );
-          }
-        });
-      });
-    });
-    // eslint-disable-next-line
-  }, [roadmap]);
+  // Set deadline for a task
+  const handleSetDeadline = (childIdx, taskIdx, date) => {
+    setRoadmap((prev) =>
+      prev.map((sec, sIdx) => {
+        if (sIdx !== selectedSection) return sec;
+        return {
+          ...sec,
+          children: sec.children.map((child, cIdx) => {
+            if (cIdx !== childIdx) return child;
+            return {
+              ...child,
+              tasks: child.tasks.map((task, tIdx) =>
+                tIdx === taskIdx ? { ...task, deadline: date } : task
+              ),
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  // Progress calculation for a subtask
+  const getSubtaskProgress = (child) => {
+    const total = child.tasks.length;
+    const done = child.tasks.filter((t) => t.checked).length;
+    return total === 0 ? 0 : Math.round((done / total) * 100);
+  };
 
   return (
     <div className="min-h-screen flex bg-base-200">
-      <Toaster position="top-center" richColors />
+      {/* Sidebar */}
+      <aside className="w-64 bg-base-100 shadow-lg p-4 flex flex-col">
+        <h2 className="text-xl font-bold mb-6">Backend Roadmap</h2>
+        <ul className="menu">
+          {roadmap.map((sec, idx) => (
+            <li key={sec.section}>
+              <button
+                className={`w-full text-left px-2 py-2 rounded-lg mb-2 transition-colors ${
+                  selectedSection === idx
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-foreground"
+                }`}
+                onClick={() => setSelectedSection(idx)}
+              >
+                {sec.section}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
       {/* Main Content */}
-      <main className="flex-1 p-6 max-w-3xl mx-auto w-full">
-        <div className="max-w-3xl mx-auto w-full p-6">
-          <h1 className="text-3xl font-bold mb-8">Backend Roadmap</h1>
-          <div className="space-y-4">
-            {roadmap.map((section, sectionIdx) => {
-              // Gather all tasks (parent + children)
-              const allTasks = [
-                ...section.children.flatMap((child) => child.items),
-              ];
-              const allChecked =
-                allTasks.length > 0 && allTasks.every((item) => item.checked);
-              return (
-                <div
-                  className="collapse collapse-arrow bg-base-200"
-                  key={section.section}
-                >
-                  <input type="checkbox" className="peer" />
-                  <div className="collapse-title text-xl font-medium flex items-center gap-2">
-                    {section.section}
-                    {allChecked && (
-                      <CheckCircle className="w-5 h-5 text-success ml-2" />
-                    )}
-                  </div>
-                  <div className="collapse-content space-y-4">
-                    {/* Parent tasks */}
-                    {section.children.map((child, cIdx) => (
-                      <div key={child.section} className="mt-4">
-                        <div className="font-bold text-lg mb-2">
-                          {child.section}
-                        </div>
-                        <div className="space-y-3">
-                          {child.items.map((item, idx) => (
-                            <div
-                              key={item.text}
-                              className="flex items-center gap-3 p-3 bg-base-100 rounded shadow border border-base-200"
-                            >
-                              <input
-                                type="checkbox"
-                                className="checkbox checkbox-primary"
-                                checked={!!item.checked}
-                                onChange={() => {
-                                  setRoadmap((prev) =>
-                                    prev.map((sec, sIdx) => {
-                                      if (sIdx !== sectionIdx) return sec;
-                                      return {
-                                        ...sec,
-                                        children: sec.children.map(
-                                          (ch, chIdx) => {
-                                            if (chIdx !== cIdx) return ch;
-                                            return {
-                                              ...ch,
-                                              items: ch.items.map((it, iIdx) =>
-                                                iIdx === idx
-                                                  ? {
-                                                      ...it,
-                                                      checked: !it.checked,
-                                                    }
-                                                  : it
-                                              ),
-                                            };
-                                          }
-                                        ),
-                                      };
-                                    })
-                                  );
-                                }}
-                                id={`section-${sectionIdx}-child-${cIdx}-item-${idx}`}
-                              />
-                              <label
-                                htmlFor={`section-${sectionIdx}-child-${cIdx}-item-${idx}`}
-                                className="flex-1 cursor-pointer"
-                              >
-                                {item.text}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-bold mb-6">
+          {roadmap[selectedSection].section}
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {roadmap[selectedSection].children.map((child, childIdx) => {
+            const progress = getSubtaskProgress(child);
+            return (
+              <div
+                key={child.section}
+                className="card bg-base-100 shadow-xl border border-base-200 p-6 flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="card-title text-lg font-semibold">
+                    {child.section}
+                  </h2>
+                  <div className="w-32">
+                    <Progress value={progress} />
+                    <div className="text-xs text-right mt-1">{progress}%</div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+                <ul className="flex-1 space-y-3 mb-4">
+                  {child.tasks.map((task, taskIdx) => {
+                    const status = getDeadlineStatus(task.deadline);
+                    return (
+                      <li
+                        key={task.text}
+                        className={`flex items-center gap-3 p-3 rounded border ${
+                          status === "overdue"
+                            ? "border-destructive bg-red-100/10"
+                            : "border-base-200"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-primary"
+                          checked={!!task.checked}
+                          onChange={() => handleCheck(childIdx, taskIdx)}
+                          id={`task-${childIdx}-${taskIdx}`}
+                        />
+                        <label
+                          htmlFor={`task-${childIdx}-${taskIdx}`}
+                          className="flex-1 cursor-pointer"
+                        >
+                          {task.text}
+                        </label>
+                        <div className="flex items-center gap-1">
+                          <CalendarIcon className="w-4 h-4" />
+                          <input
+                            type="date"
+                            className="input input-xs input-bordered"
+                            value={task.deadline || ""}
+                            onChange={(e) =>
+                              handleSetDeadline(
+                                childIdx,
+                                taskIdx,
+                                e.target.value
+                              )
+                            }
+                          />
+                          {status === "overdue" && (
+                            <AlertCircle
+                              className="w-4 h-4 text-destructive"
+                              title="Overdue"
+                            />
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {/* Add new task */}
+                {addingTaskIdx === childIdx ? (
+                  <div className="flex flex-col gap-2 mt-2">
+                    <input
+                      className="input input-bordered"
+                      value={newTask}
+                      onChange={(e) => setNewTask(e.target.value)}
+                      placeholder="New task..."
+                    />
+                    <input
+                      type="date"
+                      className="input input-xs input-bordered"
+                      value={deadlineDraft}
+                      onChange={(e) => setDeadlineDraft(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => handleAddTask(childIdx)}
+                      >
+                        Add
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => {
+                          setAddingTaskIdx(null);
+                          setNewTask("");
+                          setDeadlineDraft("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-outline btn-sm mt-2"
+                    onClick={() => setAddingTaskIdx(childIdx)}
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Add Task
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </main>
     </div>
