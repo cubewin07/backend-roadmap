@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Progress } from "./components/ui/progress";
 import { Toaster, toast } from "sonner";
+import { Pencil, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "./components/ui/dialog";
+import { Input } from "./components/ui/input";
+import { Textarea } from "./components/ui/textarea";
+import { Calendar } from "./components/ui/calendar";
+import { Badge } from "./components/ui/badge";
+import { formatDate, getDeadlineStatus } from "./lib/utils";
 import "./App.css";
 
 const INITIAL_ROADMAP = [
@@ -116,6 +130,12 @@ export default function App() {
   const [roadmap, setRoadmap] = useState(loadProgress());
   const [selectedSection, setSelectedSection] = useState(0);
   const lastUnchecked = useRef(null);
+  // Note/Deadline dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editSectionIdx, setEditSectionIdx] = useState(null);
+  const [editItemIdx, setEditItemIdx] = useState(null);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [deadlineDraft, setDeadlineDraft] = useState("");
 
   useEffect(() => {
     saveProgress(roadmap);
@@ -130,7 +150,7 @@ export default function App() {
     });
   };
 
-  // Checkbox logic (for future: add notes, deadline, etc.)
+  // Checkbox logic
   const handleCheck = (sectionIdx, itemIdx) => {
     const isCurrentlyChecked = !!roadmap[sectionIdx].items[itemIdx].checked;
     setRoadmap((prev) => {
@@ -162,13 +182,44 @@ export default function App() {
     if (lastUnchecked.current) {
       const { sectionIdx, itemIdx } = lastUnchecked.current;
       setRoadmap((prev) => {
-        const updated = [...prev];
-        updated[sectionIdx].items[itemIdx].checked = true;
+        const updated = prev.map((section, sIdx) => ({
+          ...section,
+          items: section.items.map((item, iIdx) =>
+            sIdx === sectionIdx && iIdx === itemIdx
+              ? { ...item, checked: true }
+              : item
+          ),
+        }));
         return updated;
       });
       lastUnchecked.current = null;
       toast.success("Undo successful!");
     }
+  };
+
+  // Open dialog for editing note/deadline
+  const openEditDialog = (sectionIdx, itemIdx) => {
+    setEditSectionIdx(sectionIdx);
+    setEditItemIdx(itemIdx);
+    setNoteDraft(roadmap[sectionIdx].items[itemIdx].note || "");
+    setDeadlineDraft(roadmap[sectionIdx].items[itemIdx].deadline || "");
+    setDialogOpen(true);
+  };
+
+  // Save note/deadline
+  const saveNoteDeadline = () => {
+    setRoadmap((prev) => {
+      const updated = prev.map((section, sIdx) => ({
+        ...section,
+        items: section.items.map((item, iIdx) =>
+          sIdx === editSectionIdx && iIdx === editItemIdx
+            ? { ...item, note: noteDraft, deadline: deadlineDraft }
+            : item
+        ),
+      }));
+      return updated;
+    });
+    setDialogOpen(false);
   };
 
   // Progress calculation
@@ -178,6 +229,28 @@ export default function App() {
     0
   );
   const percent = Math.round((completedItems / totalItems) * 100);
+
+  // Toast for items due today
+  useEffect(() => {
+    roadmap.forEach((section) => {
+      section.items.forEach((item) => {
+        if (
+          item.deadline &&
+          getDeadlineStatus(item.deadline) === "today" &&
+          !item.checked
+        ) {
+          toast(
+            <span>
+              <AlertCircle className="inline w-4 h-4 text-warning mr-1" />"
+              {item.text}" is due today!
+            </span>,
+            { duration: 5000 }
+          );
+        }
+      });
+    });
+    // eslint-disable-next-line
+  }, [roadmap]);
 
   return (
     <div className="min-h-screen flex bg-base-200">
@@ -227,27 +300,147 @@ export default function App() {
           </div>
           {!roadmap[selectedSection].collapsed && (
             <ul className="space-y-4">
-              {roadmap[selectedSection].items.map((item, idx) => (
-                <li
-                  key={item.text}
-                  className="flex items-center gap-3 p-4 bg-base-100 rounded-lg shadow border border-base-200"
-                >
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-primary"
-                    checked={!!item.checked}
-                    onChange={() => handleCheck(selectedSection, idx)}
-                    id={`item-${selectedSection}-${idx}`}
-                  />
-                  <label
-                    htmlFor={`item-${selectedSection}-${idx}`}
-                    className="flex-1 cursor-pointer"
+              {roadmap[selectedSection].items.map((item, idx) => {
+                const status = getDeadlineStatus(item.deadline);
+                return (
+                  <li
+                    key={item.text}
+                    className={`flex items-center gap-3 p-4 bg-base-100 rounded-lg shadow border border-base-200 relative
+                      ${
+                        status === "overdue"
+                          ? "border-destructive"
+                          : status === "soon"
+                          ? "border-warning"
+                          : ""
+                      }
+                    `}
                   >
-                    {item.text}
-                  </label>
-                  {/* Placeholder for notes and deadline UI */}
-                </li>
-              ))}
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={!!item.checked}
+                      onChange={() => handleCheck(selectedSection, idx)}
+                      id={`item-${selectedSection}-${idx}`}
+                    />
+                    <label
+                      htmlFor={`item-${selectedSection}-${idx}`}
+                      className="flex-1 cursor-pointer"
+                    >
+                      {item.text}
+                    </label>
+                    {/* Note & Deadline UI */}
+                    <div className="flex items-center gap-2">
+                      {item.note && (
+                        <Badge variant="secondary" className="text-xs">
+                          Note
+                        </Badge>
+                      )}
+                      {item.deadline && (
+                        <Badge
+                          variant={
+                            status === "overdue"
+                              ? "destructive"
+                              : status === "today"
+                              ? "warning"
+                              : status === "soon"
+                              ? "outline"
+                              : "secondary"
+                          }
+                          className="text-xs flex items-center gap-1"
+                        >
+                          <CalendarIcon className="w-3 h-3" />
+                          {formatDate(item.deadline)}
+                        </Badge>
+                      )}
+                      {status === "overdue" && (
+                        <Badge variant="destructive" className="text-xs">
+                          Overdue
+                        </Badge>
+                      )}
+                      {status === "today" && (
+                        <Badge variant="warning" className="text-xs">
+                          Due Today
+                        </Badge>
+                      )}
+                      {status === "soon" && (
+                        <Badge variant="outline" className="text-xs">
+                          Soon
+                        </Badge>
+                      )}
+                      <Dialog
+                        open={
+                          dialogOpen &&
+                          editSectionIdx === selectedSection &&
+                          editItemIdx === idx
+                        }
+                        onOpenChange={setDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <button
+                            className="btn btn-xs btn-ghost"
+                            aria-label="Edit note and deadline"
+                            onClick={() => openEditDialog(selectedSection, idx)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Note & Deadline</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">
+                              Note
+                            </label>
+                            <Textarea
+                              value={noteDraft}
+                              onChange={(e) => setNoteDraft(e.target.value)}
+                              placeholder="Add your note here..."
+                              rows={3}
+                            />
+                            <label className="block text-sm font-medium mt-2">
+                              Deadline
+                            </label>
+                            <Calendar
+                              mode="single"
+                              selected={
+                                deadlineDraft
+                                  ? new Date(deadlineDraft)
+                                  : undefined
+                              }
+                              onSelect={(date) =>
+                                setDeadlineDraft(
+                                  date ? date.toISOString().slice(0, 10) : ""
+                                )
+                              }
+                              className="rounded-md border"
+                            />
+                            {deadlineDraft && (
+                              <div className="text-xs mt-1">
+                                Selected: {formatDate(deadlineDraft)}
+                              </div>
+                            )}
+                          </div>
+                          <DialogFooter>
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={saveNoteDeadline}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => setDialogOpen(false)}
+                            >
+                              Cancel
+                            </button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
