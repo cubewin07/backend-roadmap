@@ -1,8 +1,15 @@
 import React from "react";
 import { Progress } from "../components/ui/progress";
-import { Plus, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import TaskItem from "./TaskItem";
-import { getDeadlineStatus } from "../lib/utils";
+
+const cardIcons = [
+  "📝", // For first card
+  "🔢", // For second card
+  "💾", // For databases
+  "🌐", // For APIs
+  "🚀", // For DevOps
+];
 
 export default function RoadmapCard({
   child,
@@ -23,17 +30,33 @@ export default function RoadmapCard({
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
 
   return (
-    <div className="card bg-white dark:bg-base-100 shadow-md rounded-2xl border border-base-300 p-6 flex flex-col h-full min-h-[320px] transition-all hover:shadow-lg hover:-translate-y-1">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="card-title text-lg font-semibold tracking-tight">
-          {child.section}
-        </h2>
-        <div className="w-28">
-          <Progress value={progress} />
-          <div className="text-xs text-right mt-1">{progress}%</div>
+    <div className="relative group card bg-gradient-to-br from-base-100 via-base-200 to-base-100 shadow-xl rounded-2xl border-2 border-primary/40 p-0 flex flex-col h-full min-h-[340px] transition-all hover:shadow-2xl hover:-translate-y-1 hover:border-primary/80 overflow-hidden">
+      {/* Accent bar */}
+      <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-primary to-accent rounded-l-2xl" />
+      {/* Card header */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-3 mb-2">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">
+            {cardIcons[childIdx % cardIcons.length] || "📁"}
+          </span>
+          <h2 className="card-title text-lg font-bold tracking-tight">
+            {child.section}
+          </h2>
+        </div>
+        <div className="flex flex-col items-end">
+          <div className="relative flex items-center">
+            <Progress
+              value={progress}
+              className="w-24 h-2 rounded-full bg-base-300"
+            />
+            <span className="ml-2 text-xs font-bold text-primary">
+              {progress}%
+            </span>
+          </div>
         </div>
       </div>
-      <ul className="flex-1 space-y-3 mb-4">
+      {/* Task list */}
+      <ul className="flex-1 space-y-3 mb-4 px-6">
         {child.tasks.map((task, taskIdx) => (
           <TaskItem
             key={task.text}
@@ -46,47 +69,49 @@ export default function RoadmapCard({
         ))}
       </ul>
       {/* Add new task */}
-      {addingTaskIdx === childIdx ? (
-        <div className="flex flex-col gap-2 mt-2">
-          <input
-            className="input input-bordered"
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            placeholder="New task..."
-          />
-          <input
-            type="date"
-            className="input input-xs input-bordered"
-            value={deadlineDraft}
-            onChange={(e) => setDeadlineDraft(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => handleAddTask(childIdx)}
-            >
-              Add
-            </button>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                setAddingTaskIdx(null);
-                setNewTask("");
-                setDeadlineDraft("");
-              }}
-            >
-              Cancel
-            </button>
+      <div className="px-6 pb-6">
+        {addingTaskIdx === childIdx ? (
+          <div className="flex flex-col gap-2 mt-2">
+            <input
+              className="input input-bordered"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="New task..."
+            />
+            <input
+              type="date"
+              className="input input-xs input-bordered"
+              value={deadlineDraft}
+              onChange={(e) => setDeadlineDraft(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <button
+                className="btn btn-primary btn-sm w-full"
+                onClick={() => handleAddTask(childIdx)}
+              >
+                Add
+              </button>
+              <button
+                className="btn btn-ghost btn-sm w-full"
+                onClick={() => {
+                  setAddingTaskIdx(null);
+                  setNewTask("");
+                  setDeadlineDraft("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <button
-          className="btn btn-outline btn-sm mt-2"
-          onClick={() => setAddingTaskIdx(childIdx)}
-        >
-          <Plus className="w-4 h-4 mr-1" /> Add Task
-        </button>
-      )}
+        ) : (
+          <button
+            className="btn btn-outline btn-md mt-2 w-full flex items-center justify-center gap-2 group-hover:btn-primary transition-all"
+            onClick={() => setAddingTaskIdx(childIdx)}
+          >
+            <Plus className="w-4 h-4 mr-1" /> Add Task
+          </button>
+        )}
+      </div>
     </div>
   );
 }
