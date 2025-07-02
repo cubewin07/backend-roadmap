@@ -168,9 +168,9 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-base-200 ">
-      <aside className="w-64 flex-shrink-0 fixed top-0 left-0 h-full w-64 bg-base-100 shadow-lg border-r border-base-300 p-6 flex flex-col z-20">
-        <h2 className="text-2xl font-bold mb-8 tracking-tight">
+    <div className="flex min-h-screen bg-base-200">
+      <aside className="w-64 flex-shrink-0 bg-base-100 shadow-xl border-r border-base-300 p-8 flex flex-col z-20">
+        <h2 className="text-2xl font-bold mb-10 tracking-tight">
           Backend Roadmap
         </h2>
         <ul className="menu space-y-2">
@@ -190,17 +190,17 @@ export default function App() {
           ))}
         </ul>
       </aside>
-      <main className="flex-1 ml-64 h-full">
+      <main className="flex-1 px-6 pt-10 min-h-screen w-full">
         <h1 className="text-3xl font-bold mb-10 text-center tracking-tight">
           {roadmap[selectedSection].section}
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-4">
           {roadmap[selectedSection].children.map((child, childIdx) => {
             const progress = getSubtaskProgress(child);
             return (
               <div
                 key={child.section}
-                className="card bg-base-100 shadow border border-base-200 p-6 flex flex-col h-full min-h-[340px]"
+                className="card bg-white dark:bg-base-100 shadow-md rounded-2xl border border-base-300 p-6 flex flex-col h-full min-h-[320px] transition-all hover:shadow-lg hover:-translate-y-1"
               >
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="card-title text-lg font-semibold tracking-tight">
