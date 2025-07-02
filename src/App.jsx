@@ -404,13 +404,13 @@ export default function App() {
                             <Calendar
                               mode="single"
                               selected={
-                                deadlineDraft
+                                deadlineDraft && !isNaN(new Date(deadlineDraft))
                                   ? new Date(deadlineDraft)
                                   : undefined
                               }
                               onSelect={(date) =>
                                 setDeadlineDraft(
-                                  date ? date.toISOString().slice(0, 10) : ""
+                                  date ? date.toLocaleDateString("en-CA") : ""
                                 )
                               }
                               className="rounded-md border"
