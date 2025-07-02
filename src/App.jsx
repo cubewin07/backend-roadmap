@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Progress } from "./components/ui/progress";
+import { Toaster, toast } from "sonner";
 import "./App.css";
 
 const ROADMAP = [
@@ -55,18 +56,50 @@ function saveProgress(progress) {
 export default function App() {
   const [progress, setProgress] = useState(loadProgress());
   const [selectedSection, setSelectedSection] = useState(0);
+  // Store last unchecked for undo
+  const lastUnchecked = useRef(null);
 
   useEffect(() => {
     saveProgress(progress);
   }, [progress]);
 
   const handleCheck = (sectionIdx, itemIdx) => {
+    const wasChecked = !!(
+      progress[sectionIdx] && progress[sectionIdx][itemIdx]
+    );
     setProgress((prev) => {
       const updated = { ...prev };
       if (!updated[sectionIdx]) updated[sectionIdx] = {};
-      updated[sectionIdx][itemIdx] = !updated[sectionIdx][itemIdx];
+      updated[sectionIdx][itemIdx] = !wasChecked;
       return updated;
     });
+    // If unchecking, show toast with undo
+    if (wasChecked) {
+      lastUnchecked.current = { sectionIdx, itemIdx };
+      toast(
+        <span>
+          Item unchecked.{" "}
+          <button className="btn btn-link btn-xs" onClick={undoUncheck}>
+            Undo
+          </button>
+        </span>,
+        { duration: 4000 }
+      );
+    }
+  };
+
+  const undoUncheck = () => {
+    if (lastUnchecked.current) {
+      const { sectionIdx, itemIdx } = lastUnchecked.current;
+      setProgress((prev) => {
+        const updated = { ...prev };
+        if (!updated[sectionIdx]) updated[sectionIdx] = {};
+        updated[sectionIdx][itemIdx] = true;
+        return updated;
+      });
+      lastUnchecked.current = null;
+      toast.success("Undo successful!");
+    }
   };
 
   // Calculate progress
@@ -79,6 +112,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex bg-base-200">
+      <Toaster position="top-center" richColors />
       {/* Sidebar */}
       <aside className="w-64 bg-base-100 shadow-lg p-4 hidden md:block">
         <h2 className="text-xl font-bold mb-6">Backend Roadmap</h2>
