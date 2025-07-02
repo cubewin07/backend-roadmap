@@ -120,11 +120,13 @@ export default function App() {
           {ROADMAP.map((sec, idx) => (
             <li key={sec.section}>
               <button
-                className={`w-full text-left px-2 py-2 rounded-lg ${
-                  selectedSection === idx
-                    ? "bg-primary text-primary-content"
-                    : ""
-                }`}
+                className={`w-full text-left px-2 py-2 rounded-lg transition-colors
+                  ${
+                    selectedSection === idx
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-foreground"
+                  }
+                `}
                 onClick={() => setSelectedSection(idx)}
               >
                 {sec.section}
