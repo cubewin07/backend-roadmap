@@ -3,49 +3,69 @@ import { Progress } from "./components/ui/progress";
 import { Toaster, toast } from "sonner";
 import "./App.css";
 
-const ROADMAP = [
+const INITIAL_ROADMAP = [
   {
     section: "Fundamentals",
+    collapsed: false,
     items: [
-      "Learn a programming language (e.g., JavaScript, Python, Java)",
-      "Understand basic data structures and algorithms",
-      "Version control with Git",
-      "Basic networking concepts",
+      {
+        text: "Learn a programming language (e.g., JavaScript, Python, Java)",
+        note: "",
+        deadline: "",
+      },
+      {
+        text: "Understand basic data structures and algorithms",
+        note: "",
+        deadline: "",
+      },
+      { text: "Version control with Git", note: "", deadline: "" },
+      { text: "Basic networking concepts", note: "", deadline: "" },
     ],
   },
   {
     section: "Databases",
+    collapsed: false,
     items: [
-      "Relational Databases (e.g., PostgreSQL, MySQL)",
-      "NoSQL Databases (e.g., MongoDB, Redis)",
-      "ORMs and query builders",
+      {
+        text: "Relational Databases (e.g., PostgreSQL, MySQL)",
+        note: "",
+        deadline: "",
+      },
+      {
+        text: "NoSQL Databases (e.g., MongoDB, Redis)",
+        note: "",
+        deadline: "",
+      },
+      { text: "ORMs and query builders", note: "", deadline: "" },
     ],
   },
   {
     section: "APIs",
+    collapsed: false,
     items: [
-      "RESTful API design",
-      "Authentication & Authorization",
-      "API documentation (Swagger, OpenAPI)",
+      { text: "RESTful API design", note: "", deadline: "" },
+      { text: "Authentication & Authorization", note: "", deadline: "" },
+      { text: "API documentation (Swagger, OpenAPI)", note: "", deadline: "" },
     ],
   },
   {
     section: "DevOps & Deployment",
+    collapsed: false,
     items: [
-      "Containerization (Docker)",
-      "CI/CD basics",
-      "Cloud providers (AWS, GCP, Azure)",
+      { text: "Containerization (Docker)", note: "", deadline: "" },
+      { text: "CI/CD basics", note: "", deadline: "" },
+      { text: "Cloud providers (AWS, GCP, Azure)", note: "", deadline: "" },
     ],
   },
 ];
 
-const STORAGE_KEY = "roadmap-progress";
+const STORAGE_KEY = "roadmap-progress-v2";
 
 function loadProgress() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || INITIAL_ROADMAP;
   } catch {
-    return {};
+    return INITIAL_ROADMAP;
   }
 }
 
@@ -54,47 +74,52 @@ function saveProgress(progress) {
 }
 
 export default function App() {
-  const [progress, setProgress] = useState(loadProgress());
+  const [roadmap, setRoadmap] = useState(loadProgress());
   const [selectedSection, setSelectedSection] = useState(0);
-  // Store last unchecked for undo
   const lastUnchecked = useRef(null);
 
   useEffect(() => {
-    saveProgress(progress);
-  }, [progress]);
+    saveProgress(roadmap);
+  }, [roadmap]);
 
-  const handleCheck = (sectionIdx, itemIdx) => {
-    const wasChecked = !!(
-      progress[sectionIdx] && progress[sectionIdx][itemIdx]
-    );
-    setProgress((prev) => {
-      const updated = { ...prev };
-      if (!updated[sectionIdx]) updated[sectionIdx] = {};
-      updated[sectionIdx][itemIdx] = !wasChecked;
+  // Collapsible section toggle
+  const toggleSection = (idx) => {
+    setRoadmap((prev) => {
+      const updated = [...prev];
+      updated[idx].collapsed = !updated[idx].collapsed;
       return updated;
     });
-    // If unchecking, show toast with undo
-    if (wasChecked) {
-      lastUnchecked.current = { sectionIdx, itemIdx };
-      toast(
-        <span>
-          Item unchecked.{" "}
-          <button className="btn btn-link btn-xs" onClick={undoUncheck}>
-            Undo
-          </button>
-        </span>,
-        { duration: 4000 }
-      );
-    }
+  };
+
+  // Checkbox logic (for future: add notes, deadline, etc.)
+  const handleCheck = (sectionIdx, itemIdx) => {
+    setRoadmap((prev) => {
+      const updated = [...prev];
+      if (!updated[sectionIdx].items[itemIdx].checked) {
+        updated[sectionIdx].items[itemIdx].checked = true;
+      } else {
+        updated[sectionIdx].items[itemIdx].checked = false;
+        lastUnchecked.current = { sectionIdx, itemIdx };
+        toast(
+          <span>
+            Item unchecked.{" "}
+            <button className="btn btn-link btn-xs" onClick={undoUncheck}>
+              Undo
+            </button>
+          </span>,
+          { duration: 4000 }
+        );
+      }
+      return updated;
+    });
   };
 
   const undoUncheck = () => {
     if (lastUnchecked.current) {
       const { sectionIdx, itemIdx } = lastUnchecked.current;
-      setProgress((prev) => {
-        const updated = { ...prev };
-        if (!updated[sectionIdx]) updated[sectionIdx] = {};
-        updated[sectionIdx][itemIdx] = true;
+      setRoadmap((prev) => {
+        const updated = [...prev];
+        updated[sectionIdx].items[itemIdx].checked = true;
         return updated;
       });
       lastUnchecked.current = null;
@@ -102,10 +127,10 @@ export default function App() {
     }
   };
 
-  // Calculate progress
-  const totalItems = ROADMAP.reduce((sum, sec) => sum + sec.items.length, 0);
-  const completedItems = Object.values(progress).reduce(
-    (sum, sec) => sum + Object.values(sec).filter(Boolean).length,
+  // Progress calculation
+  const totalItems = roadmap.reduce((sum, sec) => sum + sec.items.length, 0);
+  const completedItems = roadmap.reduce(
+    (sum, sec) => sum + sec.items.filter((item) => item.checked).length,
     0
   );
   const percent = Math.round((completedItems / totalItems) * 100);
@@ -117,7 +142,7 @@ export default function App() {
       <aside className="w-64 bg-base-100 shadow-lg p-4 hidden md:block">
         <h2 className="text-xl font-bold mb-6">Backend Roadmap</h2>
         <ul className="menu">
-          {ROADMAP.map((sec, idx) => (
+          {roadmap.map((sec, idx) => (
             <li key={sec.section}>
               <button
                 className={`w-full text-left px-2 py-2 rounded-lg transition-colors
@@ -139,41 +164,48 @@ export default function App() {
       <main className="flex-1 p-6 max-w-3xl mx-auto w-full">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
-            <h1 className="text-2xl font-bold">
-              {ROADMAP[selectedSection].section}
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <button
+                className="btn btn-xs btn-ghost"
+                onClick={() => toggleSection(selectedSection)}
+                aria-label={
+                  roadmap[selectedSection].collapsed ? "Expand" : "Collapse"
+                }
+              >
+                {roadmap[selectedSection].collapsed ? "+" : "-"}
+              </button>
+              {roadmap[selectedSection].section}
             </h1>
             <div className="w-full md:w-1/2">
               <Progress value={percent} className="h-4" />
               <div className="text-xs text-right mt-1">{percent}% complete</div>
             </div>
           </div>
-          <ul className="space-y-4">
-            {ROADMAP[selectedSection].items.map((item, idx) => (
-              <li
-                key={item}
-                className="flex items-center gap-3 p-4 bg-base-100 rounded-lg shadow border border-base-200"
-              >
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary"
-                  checked={
-                    !!(
-                      progress[selectedSection] &&
-                      progress[selectedSection][idx]
-                    )
-                  }
-                  onChange={() => handleCheck(selectedSection, idx)}
-                  id={`item-${selectedSection}-${idx}`}
-                />
-                <label
-                  htmlFor={`item-${selectedSection}-${idx}`}
-                  className="flex-1 cursor-pointer"
+          {!roadmap[selectedSection].collapsed && (
+            <ul className="space-y-4">
+              {roadmap[selectedSection].items.map((item, idx) => (
+                <li
+                  key={item.text}
+                  className="flex items-center gap-3 p-4 bg-base-100 rounded-lg shadow border border-base-200"
                 >
-                  {item}
-                </label>
-              </li>
-            ))}
-          </ul>
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary"
+                    checked={!!item.checked}
+                    onChange={() => handleCheck(selectedSection, idx)}
+                    id={`item-${selectedSection}-${idx}`}
+                  />
+                  <label
+                    htmlFor={`item-${selectedSection}-${idx}`}
+                    className="flex-1 cursor-pointer"
+                  >
+                    {item.text}
+                  </label>
+                  {/* Placeholder for notes and deadline UI */}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </main>
     </div>
