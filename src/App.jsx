@@ -12,14 +12,26 @@ const INITIAL_ROADMAP = [
         text: "Learn a programming language (e.g., JavaScript, Python, Java)",
         note: "",
         deadline: "",
+        checked: false,
       },
       {
         text: "Understand basic data structures and algorithms",
         note: "",
         deadline: "",
+        checked: false,
       },
-      { text: "Version control with Git", note: "", deadline: "" },
-      { text: "Basic networking concepts", note: "", deadline: "" },
+      {
+        text: "Version control with Git",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Basic networking concepts",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
     ],
   },
   {
@@ -30,31 +42,58 @@ const INITIAL_ROADMAP = [
         text: "Relational Databases (e.g., PostgreSQL, MySQL)",
         note: "",
         deadline: "",
+        checked: false,
       },
       {
         text: "NoSQL Databases (e.g., MongoDB, Redis)",
         note: "",
         deadline: "",
+        checked: false,
       },
-      { text: "ORMs and query builders", note: "", deadline: "" },
+      {
+        text: "ORMs and query builders",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
     ],
   },
   {
     section: "APIs",
     collapsed: false,
     items: [
-      { text: "RESTful API design", note: "", deadline: "" },
-      { text: "Authentication & Authorization", note: "", deadline: "" },
-      { text: "API documentation (Swagger, OpenAPI)", note: "", deadline: "" },
+      { text: "RESTful API design", note: "", deadline: "", checked: false },
+      {
+        text: "Authentication & Authorization",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "API documentation (Swagger, OpenAPI)",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
     ],
   },
   {
     section: "DevOps & Deployment",
     collapsed: false,
     items: [
-      { text: "Containerization (Docker)", note: "", deadline: "" },
-      { text: "CI/CD basics", note: "", deadline: "" },
-      { text: "Cloud providers (AWS, GCP, Azure)", note: "", deadline: "" },
+      {
+        text: "Containerization (Docker)",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      { text: "CI/CD basics", note: "", deadline: "", checked: false },
+      {
+        text: "Cloud providers (AWS, GCP, Azure)",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
     ],
   },
 ];
@@ -93,25 +132,30 @@ export default function App() {
 
   // Checkbox logic (for future: add notes, deadline, etc.)
   const handleCheck = (sectionIdx, itemIdx) => {
+    const isCurrentlyChecked = !!roadmap[sectionIdx].items[itemIdx].checked;
     setRoadmap((prev) => {
-      const updated = [...prev];
-      if (!updated[sectionIdx].items[itemIdx].checked) {
-        updated[sectionIdx].items[itemIdx].checked = true;
-      } else {
-        updated[sectionIdx].items[itemIdx].checked = false;
-        lastUnchecked.current = { sectionIdx, itemIdx };
-        toast(
-          <span>
-            Item unchecked.{" "}
-            <button className="btn btn-link btn-xs" onClick={undoUncheck}>
-              Undo
-            </button>
-          </span>,
-          { duration: 4000 }
-        );
-      }
+      const updated = prev.map((section, sIdx) => ({
+        ...section,
+        items: section.items.map((item, iIdx) =>
+          sIdx === sectionIdx && iIdx === itemIdx
+            ? { ...item, checked: !Boolean(item.checked) }
+            : item
+        ),
+      }));
       return updated;
     });
+    if (isCurrentlyChecked) {
+      lastUnchecked.current = { sectionIdx, itemIdx };
+      toast(
+        <span>
+          Item unchecked.{" "}
+          <button className="btn btn-link btn-xs" onClick={undoUncheck}>
+            Undo
+          </button>
+        </span>,
+        { duration: 4000 }
+      );
+    }
   };
 
   const undoUncheck = () => {
