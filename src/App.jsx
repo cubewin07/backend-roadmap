@@ -19,56 +19,76 @@ import "./App.css";
 
 const INITIAL_ROADMAP = [
   {
-    section: "Java Language & OOP Fundamentals",
+    section: "Fundamentals",
     collapsed: false,
     items: [
       {
-        text: "Syntax, control structures, exception handling",
+        text: "Version control with Git",
         note: "",
         deadline: "",
         checked: false,
       },
       {
-        text: "Classes, objects, inheritance, polymorphism",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-      {
-        text: "Interfaces, abstract classes",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-      {
-        text: "Collections (List, Map, Set, Stack, Queue)",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-      {
-        text: "Java 8+ features: Lambdas, Streams, Optional",
+        text: "Basic networking concepts",
         note: "",
         deadline: "",
         checked: false,
       },
     ],
-  },
-  {
-    section: "DSA in Java",
-    collapsed: false,
-    items: [
+    children: [
       {
-        text: "Re-implement CP knowledge in Java using: ArrayList, LinkedList, HashMap, TreeMap, HashSet, PriorityQueue",
-        note: "",
-        deadline: "",
-        checked: false,
+        section: "Java Language & OOP Fundamentals",
+        collapsed: false,
+        items: [
+          {
+            text: "Syntax, control structures, exception handling",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+          {
+            text: "Classes, objects, inheritance, polymorphism",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+          {
+            text: "Interfaces, abstract classes",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+          {
+            text: "Collections (List, Map, Set, Stack, Queue)",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+          {
+            text: "Java 8+ features: Lambdas, Streams, Optional",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+        ],
       },
       {
-        text: "Solve LeetCode or HackerRank problems in Java to get used to syntax",
-        note: "",
-        deadline: "",
-        checked: false,
+        section: "DSA in Java",
+        collapsed: false,
+        items: [
+          {
+            text: "Re-implement CP knowledge in Java using: ArrayList, LinkedList, HashMap, TreeMap, HashSet, PriorityQueue",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+          {
+            text: "Solve LeetCode or HackerRank problems in Java to get used to syntax",
+            note: "",
+            deadline: "",
+            checked: false,
+          },
+        ],
       },
     ],
   },
@@ -91,36 +111,6 @@ const INITIAL_ROADMAP = [
       },
       {
         text: "Logback/SLF4J: Logging",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-    ],
-  },
-  {
-    section: "Fundamentals",
-    collapsed: false,
-    items: [
-      {
-        text: "Learn a programming language (e.g., JavaScript, Python, Java)",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-      {
-        text: "Understand basic data structures and algorithms",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-      {
-        text: "Version control with Git",
-        note: "",
-        deadline: "",
-        checked: false,
-      },
-      {
-        text: "Basic networking concepts",
         note: "",
         deadline: "",
         checked: false,
@@ -211,10 +201,12 @@ export default function App() {
   const lastUnchecked = useRef(null);
   // Note/Deadline dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editSectionIdx, setEditSectionIdx] = useState(null);
   const [editItemIdx, setEditItemIdx] = useState(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [deadlineDraft, setDeadlineDraft] = useState("");
+  const [sectionModalOpen, setSectionModalOpen] = useState(false);
+  const [modalSectionIdx, setModalSectionIdx] = useState(null);
+  const [editNoteIdx, setEditNoteIdx] = useState(null);
 
   useEffect(() => {
     saveProgress(roadmap);
@@ -277,25 +269,27 @@ export default function App() {
   };
 
   // Open dialog for editing note/deadline
-  const openEditDialog = (sectionIdx, itemIdx) => {
-    setEditSectionIdx(sectionIdx);
+  const openEditDialog = (itemIdx) => {
     setEditItemIdx(itemIdx);
-    setNoteDraft(roadmap[sectionIdx].items[itemIdx].note || "");
-    setDeadlineDraft(roadmap[sectionIdx].items[itemIdx].deadline || "");
+    setNoteDraft(roadmap[selectedSection].items[itemIdx].note || "");
+    setDeadlineDraft(roadmap[selectedSection].items[itemIdx].deadline || "");
     setDialogOpen(true);
   };
 
-  // Save note/deadline
+  // Save note/deadline for the correct item in the selected section
   const saveNoteDeadline = () => {
     setRoadmap((prev) => {
-      const updated = prev.map((section, sIdx) => ({
-        ...section,
-        items: section.items.map((item, iIdx) =>
-          sIdx === editSectionIdx && iIdx === editItemIdx
-            ? { ...item, note: noteDraft, deadline: deadlineDraft }
-            : item
-        ),
-      }));
+      const updated = prev.map((section, sIdx) => {
+        if (sIdx !== selectedSection) return section;
+        return {
+          ...section,
+          items: section.items.map((item, iIdx) =>
+            iIdx === editItemIdx
+              ? { ...item, note: noteDraft, deadline: deadlineDraft }
+              : item
+          ),
+        };
+      });
       return updated;
     });
     setDialogOpen(false);
@@ -331,6 +325,32 @@ export default function App() {
     // eslint-disable-next-line
   }, [roadmap]);
 
+  // Open section modal
+  const openSectionModal = (sectionIdx) => {
+    setModalSectionIdx(sectionIdx);
+    setSectionModalOpen(true);
+    setEditNoteIdx(null);
+    setNoteDraft("");
+  };
+
+  // Save note for item in modal
+  const saveModalNote = (itemIdx) => {
+    setRoadmap((prev) => {
+      const updated = prev.map((section, sIdx) => {
+        if (sIdx !== modalSectionIdx) return section;
+        return {
+          ...section,
+          items: section.items.map((item, iIdx) =>
+            iIdx === itemIdx ? { ...item, note: noteDraft } : item
+          ),
+        };
+      });
+      return updated;
+    });
+    setEditNoteIdx(null);
+    setNoteDraft("");
+  };
+
   return (
     <div className="min-h-screen flex bg-base-200">
       <Toaster position="top-center" richColors />
@@ -339,9 +359,9 @@ export default function App() {
         <h2 className="text-xl font-bold mb-6">Backend Roadmap</h2>
         <ul className="menu">
           {roadmap.map((sec, idx) => (
-            <li key={sec.section}>
+            <li key={sec.section} className="flex items-center gap-2 mb-2">
               <button
-                className={`w-full text-left px-2 py-2 rounded-lg transition-colors
+                className={`flex-1 text-left px-2 py-2 rounded-lg transition-colors
                   ${
                     selectedSection === idx
                       ? "bg-primary text-primary-foreground"
@@ -352,10 +372,110 @@ export default function App() {
               >
                 {sec.section}
               </button>
+              <button
+                className="btn btn-xs btn-outline ml-2"
+                onClick={() => openSectionModal(idx)}
+              >
+                Show Notes
+              </button>
             </li>
           ))}
         </ul>
       </aside>
+      {/* Section Modal */}
+      <Dialog open={sectionModalOpen} onOpenChange={setSectionModalOpen}>
+        <DialogContent className="max-w-2xl w-full">
+          <DialogHeader>
+            <DialogTitle>
+              {modalSectionIdx !== null ? roadmap[modalSectionIdx].section : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {modalSectionIdx !== null &&
+              roadmap[modalSectionIdx].items.map((item, idx) => (
+                <div
+                  key={item.text}
+                  className="p-4 rounded-lg bg-base-100 shadow border border-base-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={!!item.checked}
+                      onChange={() => handleCheck(modalSectionIdx, idx)}
+                      id={`modal-item-${modalSectionIdx}-${idx}`}
+                    />
+                    <label
+                      htmlFor={`modal-item-${modalSectionIdx}-${idx}`}
+                      className="flex-1 font-semibold text-lg cursor-pointer"
+                    >
+                      {item.text}
+                    </label>
+                    <button
+                      className="btn btn-xs btn-outline"
+                      onClick={() => {
+                        setEditNoteIdx(idx);
+                        setNoteDraft(item.note || "");
+                      }}
+                    >
+                      {editNoteIdx === idx
+                        ? "Cancel"
+                        : item.note
+                        ? "Edit Note"
+                        : "Add Note"}
+                    </button>
+                  </div>
+                  {/* Note Card */}
+                  {editNoteIdx === idx ? (
+                    <div className="mt-3 p-3 rounded bg-base-200 border border-primary flex flex-col gap-2">
+                      <textarea
+                        className="textarea textarea-bordered w-full"
+                        value={noteDraft}
+                        onChange={(e) => setNoteDraft(e.target.value)}
+                        rows={3}
+                        placeholder="Add your note here..."
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => saveModalNote(idx)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => {
+                            setEditNoteIdx(null);
+                            setNoteDraft("");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    item.note && (
+                      <div className="mt-3 p-3 rounded bg-base-200 border border-base-300 text-sm">
+                        <span className="font-semibold text-primary">
+                          Note:
+                        </span>{" "}
+                        {item.note}
+                      </div>
+                    )
+                  )}
+                </div>
+              ))}
+          </div>
+          <DialogFooter>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setSectionModalOpen(false)}
+            >
+              Close
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Main Content */}
       <main className="flex-1 p-6 max-w-3xl mx-auto w-full">
         <div className="flex flex-col gap-4">
@@ -407,116 +527,72 @@ export default function App() {
                     >
                       {item.text}
                     </label>
-                    {/* Note & Deadline UI */}
-                    <div className="flex items-center gap-2">
-                      {item.note && (
-                        <Badge variant="secondary" className="text-xs">
-                          Note
-                        </Badge>
-                      )}
-                      {item.deadline && (
-                        <Badge
-                          variant={
-                            status === "overdue"
-                              ? "destructive"
-                              : status === "today"
-                              ? "warning"
-                              : status === "soon"
-                              ? "outline"
-                              : "secondary"
-                          }
-                          className="text-xs flex items-center gap-1"
+                    <Dialog
+                      open={dialogOpen && editItemIdx === idx}
+                      onOpenChange={setDialogOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <button
+                          className="btn btn-xs btn-ghost"
+                          aria-label="Edit note and deadline"
+                          onClick={() => openEditDialog(idx)}
                         >
-                          <CalendarIcon className="w-3 h-3" />
-                          {formatDate(item.deadline)}
-                        </Badge>
-                      )}
-                      {status === "overdue" && (
-                        <Badge variant="destructive" className="text-xs">
-                          Overdue
-                        </Badge>
-                      )}
-                      {status === "today" && (
-                        <Badge variant="warning" className="text-xs">
-                          Due Today
-                        </Badge>
-                      )}
-                      {status === "soon" && (
-                        <Badge variant="outline" className="text-xs">
-                          Soon
-                        </Badge>
-                      )}
-                      <Dialog
-                        open={
-                          dialogOpen &&
-                          editSectionIdx === selectedSection &&
-                          editItemIdx === idx
-                        }
-                        onOpenChange={setDialogOpen}
-                      >
-                        <DialogTrigger asChild>
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit Note & Deadline</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium">
+                            Note
+                          </label>
+                          <Textarea
+                            value={noteDraft}
+                            onChange={(e) => setNoteDraft(e.target.value)}
+                            placeholder="Add your note here..."
+                            rows={3}
+                          />
+                          <label className="block text-sm font-medium mt-2">
+                            Deadline
+                          </label>
+                          <Calendar
+                            mode="single"
+                            selected={
+                              deadlineDraft && !isNaN(new Date(deadlineDraft))
+                                ? new Date(deadlineDraft)
+                                : undefined
+                            }
+                            onSelect={(date) =>
+                              setDeadlineDraft(
+                                date ? date.toLocaleDateString("en-CA") : ""
+                              )
+                            }
+                            className="rounded-md border"
+                          />
+                          {deadlineDraft && (
+                            <div className="text-xs mt-1">
+                              Selected: {formatDate(deadlineDraft)}
+                            </div>
+                          )}
+                        </div>
+                        <DialogFooter>
                           <button
-                            className="btn btn-xs btn-ghost"
-                            aria-label="Edit note and deadline"
-                            onClick={() => openEditDialog(selectedSection, idx)}
+                            className="btn btn-primary btn-sm"
+                            onClick={saveNoteDeadline}
                           >
-                            <Pencil className="w-4 h-4" />
+                            Save
                           </button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Edit Note & Deadline</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium">
-                              Note
-                            </label>
-                            <Textarea
-                              value={noteDraft}
-                              onChange={(e) => setNoteDraft(e.target.value)}
-                              placeholder="Add your note here..."
-                              rows={3}
-                            />
-                            <label className="block text-sm font-medium mt-2">
-                              Deadline
-                            </label>
-                            <Calendar
-                              mode="single"
-                              selected={
-                                deadlineDraft && !isNaN(new Date(deadlineDraft))
-                                  ? new Date(deadlineDraft)
-                                  : undefined
-                              }
-                              onSelect={(date) =>
-                                setDeadlineDraft(
-                                  date ? date.toLocaleDateString("en-CA") : ""
-                                )
-                              }
-                              className="rounded-md border"
-                            />
-                            {deadlineDraft && (
-                              <div className="text-xs mt-1">
-                                Selected: {formatDate(deadlineDraft)}
-                              </div>
-                            )}
-                          </div>
-                          <DialogFooter>
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={saveNoteDeadline}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn btn-ghost btn-sm"
-                              onClick={() => setDialogOpen(false)}
-                            >
-                              Cancel
-                            </button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => setDialogOpen(false)}
+                          >
+                            Cancel
+                          </button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </li>
                 );
               })}
