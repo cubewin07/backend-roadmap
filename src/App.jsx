@@ -19,6 +19,85 @@ import "./App.css";
 
 const INITIAL_ROADMAP = [
   {
+    section: "Java Language & OOP Fundamentals",
+    collapsed: false,
+    items: [
+      {
+        text: "Syntax, control structures, exception handling",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Classes, objects, inheritance, polymorphism",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Interfaces, abstract classes",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Collections (List, Map, Set, Stack, Queue)",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Java 8+ features: Lambdas, Streams, Optional",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+    ],
+  },
+  {
+    section: "DSA in Java",
+    collapsed: false,
+    items: [
+      {
+        text: "Re-implement CP knowledge in Java using: ArrayList, LinkedList, HashMap, TreeMap, HashSet, PriorityQueue",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Solve LeetCode or HackerRank problems in Java to get used to syntax",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+    ],
+  },
+  {
+    section: "Java Backend Tools",
+    collapsed: false,
+    items: [
+      {
+        text: "Maven / Gradle: Dependency management",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      { text: "JUnit: Unit testing", note: "", deadline: "", checked: false },
+      {
+        text: "Lombok: Reduce boilerplate",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+      {
+        text: "Logback/SLF4J: Logging",
+        note: "",
+        deadline: "",
+        checked: false,
+      },
+    ],
+  },
+  {
     section: "Fundamentals",
     collapsed: false,
     items: [
