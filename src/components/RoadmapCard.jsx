@@ -1,16 +1,25 @@
 import React from "react";
 import { Progress } from "../components/ui/progress";
-import { Plus } from "lucide-react";
+import {
+  Plus,
+  BookOpen,
+  ListOrdered,
+  Database,
+  Cloud,
+  ShieldCheck,
+  FlaskConical,
+  Rocket,
+} from "lucide-react";
 import TaskItem from "./TaskItem";
 
 const cardIcons = [
-  "📝", // For first card
-  "🔢", // For second card
-  "💾", // For databases
-  "🌐", // For APIs
-  "🔒", // For Security
-  "🧪", // For Testing
-  "🚀", // For DevOps
+  BookOpen, // Fundamentals
+  ListOrdered, // DSA
+  Database, // Databases
+  Cloud, // APIs
+  ShieldCheck, // Security
+  FlaskConical, // Testing
+  Rocket, // DevOps
 ];
 
 export default function RoadmapCard({
@@ -31,6 +40,9 @@ export default function RoadmapCard({
   const done = child.tasks.filter((t) => t.checked).length;
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
 
+  // Pick icon based on section index, fallback to BookOpen
+  const Icon = cardIcons[childIdx % cardIcons.length] || BookOpen;
+
   return (
     <div className="relative group card bg-gradient-to-br from-indigo-500/20 via-purple-400/10 to-blue-400/10 shadow-xl rounded-2xl border-2 border-indigo-400/40 p-0 flex flex-col h-full min-h-[340px] transition-all hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/80 overflow-hidden">
       {/* Accent bar */}
@@ -38,9 +50,7 @@ export default function RoadmapCard({
       {/* Card header */}
       <div className="flex items-center justify-between px-6 pt-6 pb-3 mb-2 bg-gradient-to-r from-indigo-500/30 to-blue-400/10 rounded-t-2xl">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">
-            {cardIcons[childIdx % cardIcons.length] || "📁"}
-          </span>
+          <Icon className="w-7 h-7 text-indigo-600 drop-shadow" />
           <h2 className="card-title text-xl font-extrabold tracking-tight text-indigo-700 drop-shadow-sm">
             {child.section}
           </h2>
