@@ -8,6 +8,8 @@ const cardIcons = [
   "🔢", // For second card
   "💾", // For databases
   "🌐", // For APIs
+  "🔒", // For Security
+  "🧪", // For Testing
   "🚀", // For DevOps
 ];
 
@@ -30,16 +32,16 @@ export default function RoadmapCard({
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
 
   return (
-    <div className="relative group card bg-gradient-to-br from-base-100 via-base-200 to-base-100 shadow-xl rounded-2xl border-2 border-primary/40 p-0 flex flex-col h-full min-h-[340px] transition-all hover:shadow-2xl hover:-translate-y-1 hover:border-primary/80 overflow-hidden">
+    <div className="relative group card bg-gradient-to-br from-indigo-500/20 via-purple-400/10 to-blue-400/10 shadow-xl rounded-2xl border-2 border-indigo-400/40 p-0 flex flex-col h-full min-h-[340px] transition-all hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/80 overflow-hidden">
       {/* Accent bar */}
-      <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-primary to-accent rounded-l-2xl" />
+      <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-indigo-500 via-purple-500 to-blue-500 rounded-l-2xl" />
       {/* Card header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-3 mb-2">
+      <div className="flex items-center justify-between px-6 pt-6 pb-3 mb-2 bg-gradient-to-r from-indigo-500/30 to-blue-400/10 rounded-t-2xl">
         <div className="flex items-center gap-3">
           <span className="text-2xl">
             {cardIcons[childIdx % cardIcons.length] || "📁"}
           </span>
-          <h2 className="card-title text-lg font-bold tracking-tight">
+          <h2 className="card-title text-xl font-extrabold tracking-tight text-indigo-700 drop-shadow-sm">
             {child.section}
           </h2>
         </div>
@@ -47,16 +49,16 @@ export default function RoadmapCard({
           <div className="relative flex items-center">
             <Progress
               value={progress}
-              className="w-24 h-2 rounded-full bg-base-300"
+              className="w-28 h-2 rounded-full bg-blue-200"
             />
-            <span className="ml-2 text-xs font-bold text-primary">
+            <span className="ml-2 text-xs font-bold text-indigo-700">
               {progress}%
             </span>
           </div>
         </div>
       </div>
       {/* Task list */}
-      <ul className="flex-1 space-y-3 mb-4 px-6">
+      <ul className="flex-1 space-y-3 mb-4 px-6 bg-indigo-100/10 rounded-b-2xl pt-2 pb-2">
         {child.tasks.map((task, taskIdx) => (
           <TaskItem
             key={task.text}
