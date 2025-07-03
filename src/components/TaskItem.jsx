@@ -1,5 +1,9 @@
 import React from "react";
-import { Calendar as CalendarIcon, AlertCircle } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import { getDeadlineStatus, getDaysLeft } from "../lib/utils";
 
 export default function TaskItem({
@@ -33,13 +37,23 @@ export default function TaskItem({
       );
     }
   }
+
+  let rowClass = "";
+  if (task.checked) {
+    if (status === "overdue") {
+      rowClass = "border-green-600 bg-green-100/40"; // Overdue but finished
+    } else {
+      rowClass = "border-green-400 bg-green-100/20"; // Finished on time
+    }
+  } else if (status === "overdue") {
+    rowClass = "border-destructive bg-red-100/10"; // Overdue and not finished
+  } else {
+    rowClass = "border-base-200"; // Default
+  }
+
   return (
     <li
-      className={`flex items-center gap-3 p-3 rounded border ${
-        status === "overdue"
-          ? "border-destructive bg-red-100/10"
-          : "border-base-200"
-      }`}
+      className={`flex items-center gap-3 p-3 rounded transition-colors ${rowClass}`}
     >
       <input
         type="checkbox"
@@ -50,7 +64,9 @@ export default function TaskItem({
       />
       <label
         htmlFor={`task-${childIdx}-${taskIdx}`}
-        className="flex-1 cursor-pointer text-base"
+        className={`flex-1 cursor-pointer text-base ${
+          task.checked ? "line-through text-green-700/80" : ""
+        }`}
       >
         {task.text}
       </label>
@@ -67,7 +83,13 @@ export default function TaskItem({
           />
         </div>
         {badge}
-        {status === "overdue" && (
+        {task.checked && (
+          <CheckCircle2
+            className="w-5 h-5 text-green-600 ml-1"
+            title="Completed"
+          />
+        )}
+        {!task.checked && status === "overdue" && (
           <AlertCircle className="w-4 h-4 text-destructive" title="Overdue" />
         )}
       </div>
