@@ -15,19 +15,19 @@ export default function TaskItem({
   if (typeof daysLeft === "number") {
     if (daysLeft > 0) {
       badge = (
-        <span className="ml-2 px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700">
+        <span className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 whitespace-nowrap">
           {daysLeft} day{daysLeft > 1 ? "s" : ""} left
         </span>
       );
     } else if (daysLeft === 0) {
       badge = (
-        <span className="ml-2 px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800">
+        <span className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
           Today
         </span>
       );
     } else {
       badge = (
-        <span className="ml-2 px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">
+        <span className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 whitespace-nowrap">
           Overdue by {Math.abs(daysLeft)} day{Math.abs(daysLeft) > 1 ? "s" : ""}
         </span>
       );
@@ -54,14 +54,18 @@ export default function TaskItem({
       >
         {task.text}
       </label>
-      <div className="flex items-center gap-1">
-        <CalendarIcon className="w-4 h-4" />
-        <input
-          type="date"
-          className="input input-xs input-bordered"
-          value={task.deadline || ""}
-          onChange={(e) => handleSetDeadline(childIdx, taskIdx, e.target.value)}
-        />
+      <div className="flex items-center gap-2 min-w-[180px] justify-end">
+        <div className="flex items-center gap-1">
+          <CalendarIcon className="w-4 h-4" />
+          <input
+            type="date"
+            className="input input-xs input-bordered"
+            value={task.deadline || ""}
+            onChange={(e) =>
+              handleSetDeadline(childIdx, taskIdx, e.target.value)
+            }
+          />
+        </div>
         {badge}
         {status === "overdue" && (
           <AlertCircle className="w-4 h-4 text-destructive" title="Overdue" />
