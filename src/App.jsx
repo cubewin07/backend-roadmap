@@ -20,6 +20,21 @@ const INITIAL_ROADMAP = [
             checked: false,
             deadline: "",
           },
+          {
+            text: "Interfaces, abstract classes, access modifiers",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Packages, static vs instance, Java memory model",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Java 8+ features: Lambdas, Streams, Optional",
+            checked: false,
+            deadline: "",
+          },
         ],
       },
       {
@@ -27,6 +42,16 @@ const INITIAL_ROADMAP = [
         tasks: [
           {
             text: "Re-implement CP knowledge in Java",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Collections: List, Set, Map, Queue",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Generics, Comparable, Comparator",
             checked: false,
             deadline: "",
           },
@@ -39,7 +64,20 @@ const INITIAL_ROADMAP = [
     children: [
       {
         section: "Relational Databases",
-        tasks: [{ text: "PostgreSQL", checked: false, deadline: "" }],
+        tasks: [
+          { text: "PostgreSQL", checked: false, deadline: "" },
+          {
+            text: "SQL basics: SELECT, JOIN, GROUP BY",
+            checked: false,
+            deadline: "",
+          },
+          { text: "Spring Data JPA + Hibernate", checked: false, deadline: "" },
+          {
+            text: "Entity relationships (OneToMany, ManyToOne)",
+            checked: false,
+            deadline: "",
+          },
+        ],
       },
     ],
   },
@@ -50,6 +88,61 @@ const INITIAL_ROADMAP = [
         section: "RESTful API Design",
         tasks: [
           { text: "Design RESTful endpoints", checked: false, deadline: "" },
+          {
+            text: "Spring Boot controllers and services",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "DTOs and validation with annotations",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Exception handling with @ControllerAdvice",
+            checked: false,
+            deadline: "",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    section: "Security",
+    children: [
+      {
+        section: "Authentication & Authorization",
+        tasks: [
+          { text: "Spring Security basics", checked: false, deadline: "" },
+          { text: "JWT authentication", checked: false, deadline: "" },
+          { text: "Role-based access control", checked: false, deadline: "" },
+          {
+            text: "Password encoding with BCrypt",
+            checked: false,
+            deadline: "",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    section: "Testing",
+    children: [
+      {
+        section: "Testing Strategies",
+        tasks: [
+          { text: "Unit testing with JUnit 5", checked: false, deadline: "" },
+          { text: "Mocking with Mockito", checked: false, deadline: "" },
+          {
+            text: "Integration testing with Spring Boot Test",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Test REST endpoints with MockMvc",
+            checked: false,
+            deadline: "",
+          },
         ],
       },
     ],
@@ -59,7 +152,29 @@ const INITIAL_ROADMAP = [
     children: [
       {
         section: "Containerization",
-        tasks: [{ text: "Docker", checked: false, deadline: "" }],
+        tasks: [
+          { text: "Docker", checked: false, deadline: "" },
+          {
+            text: "Create Dockerfile for Spring Boot app",
+            checked: false,
+            deadline: "",
+          },
+        ],
+      },
+      {
+        section: "Deployment",
+        tasks: [
+          {
+            text: "Build and run Spring Boot JAR",
+            checked: false,
+            deadline: "",
+          },
+          {
+            text: "Deploy to Railway / Render / Heroku",
+            checked: false,
+            deadline: "",
+          },
+        ],
       },
     ],
   },
