@@ -27,3 +27,15 @@ export function getDeadlineStatus(dateStr) {
   if (diff < 4) return "soon";
   return null;
 }
+
+export function getDaysLeft(deadline) {
+  if (!deadline) return null;
+  const today = new Date();
+  const due = new Date(deadline);
+  if (isNaN(due.getTime())) return null;
+  // Zero out time for both dates
+  today.setHours(0, 0, 0, 0);
+  due.setHours(0, 0, 0, 0);
+  const diff = Math.round((due - today) / (1000 * 60 * 60 * 24));
+  return diff;
+}
