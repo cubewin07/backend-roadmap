@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
-import { formatDate, getDeadlineStatus } from "./lib/utils";
 
 const INITIAL_ROADMAP = [
   {
