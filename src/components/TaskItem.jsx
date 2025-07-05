@@ -16,7 +16,7 @@ export default function TaskItem({
   const status = getDeadlineStatus(task.deadline);
   const daysLeft = getDaysLeft(task.deadline);
   let badge = null;
-  if (typeof daysLeft === "number") {
+  if (!task.checked && typeof daysLeft === "number") {
     if (daysLeft > 0) {
       badge = (
         <span className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 whitespace-nowrap">
