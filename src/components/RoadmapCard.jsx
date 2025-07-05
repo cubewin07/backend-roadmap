@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   FlaskConical,
   Rocket,
+  X,
 } from "lucide-react";
 import TaskItem from "./TaskItem";
 
@@ -83,28 +84,52 @@ export default function RoadmapCard({
       {/* Add new task */}
       <div className="px-6 pb-6">
         {addingTaskIdx === childIdx ? (
-          <div className="flex flex-col gap-2 mt-2">
+          <div className="flex flex-col gap-3 mt-2 p-4 bg-base-100/50 rounded-lg border border-indigo-200/30">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-indigo-700">
+                Add New Task
+              </h3>
+              <button
+                onClick={() => {
+                  setAddingTaskIdx(null);
+                  setNewTask("");
+                  setDeadlineDraft("");
+                }}
+                className="btn btn-ghost btn-xs btn-circle hover:bg-red-100 hover:text-red-600"
+                title="Cancel"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
             <input
-              className="input input-bordered"
+              className="input input-bordered input-sm w-full"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              placeholder="New task..."
+              placeholder="Enter task description..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newTask.trim()) {
+                  handleAddTask(childIdx);
+                }
+              }}
             />
             <input
               type="date"
-              className="input input-xs input-bordered"
+              className="input input-bordered input-xs w-full"
               value={deadlineDraft}
               onChange={(e) => setDeadlineDraft(e.target.value)}
+              placeholder="Set deadline (optional)"
             />
             <div className="flex gap-2">
               <button
-                className="btn btn-primary btn-sm w-full"
+                className="btn btn-primary btn-sm flex-1"
                 onClick={() => handleAddTask(childIdx)}
+                disabled={!newTask.trim()}
               >
-                Add
+                <Plus className="w-3 h-3 mr-1" />
+                Add Task
               </button>
               <button
-                className="btn btn-ghost btn-sm w-full"
+                className="btn btn-outline btn-sm flex-1 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                 onClick={() => {
                   setAddingTaskIdx(null);
                   setNewTask("");
@@ -117,10 +142,10 @@ export default function RoadmapCard({
           </div>
         ) : (
           <button
-            className="btn btn-outline btn-md mt-2 w-full flex items-center justify-center gap-2 group-hover:btn-primary transition-all"
+            className="btn btn-outline btn-md mt-2 w-full flex items-center justify-center gap-2 group-hover:btn-primary transition-all hover:scale-[1.02]"
             onClick={() => setAddingTaskIdx(childIdx)}
           >
-            <Plus className="w-4 h-4 mr-1" /> Add Task
+            <Plus className="w-4 h-4" /> Add Task
           </button>
         )}
       </div>
