@@ -602,9 +602,9 @@ const STORAGE_KEY = "roadmap-progress-v3";
 
 function loadProgress() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || INITIAL_ROADMAP;
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || ENHANCED_ROADMAP;
   } catch {
-    return INITIAL_ROADMAP;
+    return ENHANCED_ROADMAP;
   }
 }
 
@@ -618,6 +618,17 @@ export default function App() {
   const [newTask, setNewTask] = useState("");
   const [addingTaskIdx, setAddingTaskIdx] = useState(null);
   const [deadlineDraft, setDeadlineDraft] = useState("");
+
+  // Initialize theme from localStorage or default to dark
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const isDark = savedTheme ? savedTheme === "dark" : true;
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
 
   useEffect(() => {
     saveProgress(roadmap);
