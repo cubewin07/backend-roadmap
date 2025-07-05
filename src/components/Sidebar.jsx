@@ -38,6 +38,13 @@ export default function Sidebar({
   const [isDark, setIsDark] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  // Initialize theme from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const savedIsDark = savedTheme ? savedTheme === "dark" : true;
+    setIsDark(savedIsDark);
+  }, []);
+
   // Calculate progress for each section
   const getSectionProgress = (section) => {
     const allTasks = section.children.flatMap((child) => child.tasks);
@@ -104,7 +111,9 @@ export default function Sidebar({
 
   // Toggle theme
   const toggleTheme = () => {
-    setIsDark(!isDark);
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    localStorage.setItem("theme", newIsDark ? "dark" : "light");
     document.documentElement.classList.toggle("dark");
   };
 
@@ -120,7 +129,8 @@ export default function Sidebar({
       {/* Collapse toggle button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-8 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all z-30 border-2 border-base-100"
+        className="absolute -right-3 top-8 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all z-30 border-2 border-base-100 hover:scale-110"
+        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isCollapsed ? (
           <ChevronRight className="w-4 h-4" />
@@ -137,7 +147,7 @@ export default function Sidebar({
               isCollapsed ? "justify-center" : ""
             }`}
           >
-            <div className="bg-primary rounded-full p-2 shadow-lg">
+            <div className="bg-primary rounded-full p-2 shadow-lg hover:shadow-xl transition-all">
               <BookOpen className="w-6 h-6 text-primary-foreground" />
             </div>
             {!isCollapsed && (
@@ -171,6 +181,7 @@ export default function Sidebar({
                         : "bg-card/80 text-foreground backdrop-blur-sm"
                     }`}
                     onClick={() => onSelectSection(idx)}
+                    title={isCollapsed ? sec.section : undefined}
                   >
                     {/* Animated background for selected */}
                     {isSelected && (
@@ -262,6 +273,7 @@ export default function Sidebar({
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="bg-primary/20 hover:bg-primary/30 rounded-full p-2 transition-colors"
+                title="User menu"
               >
                 <User className="w-5 h-5 text-primary" />
               </button>
