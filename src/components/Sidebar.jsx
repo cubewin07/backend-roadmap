@@ -13,7 +13,6 @@ import {
   Sun,
   Moon,
   BarChart3,
-  Calendar,
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
@@ -77,7 +76,7 @@ export default function Sidebar({
       case "LOW":
         return <CheckCircle2 className="w-3 h-3" />;
       default:
-        return <Calendar className="w-3 h-3" />;
+        return <BarChart3 className="w-3 h-3" />;
     }
   };
 
