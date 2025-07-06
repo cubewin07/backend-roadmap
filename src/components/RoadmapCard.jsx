@@ -10,6 +10,8 @@ import {
   FlaskConical,
   Rocket,
   X,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 import TaskItem from "./TaskItem";
 
@@ -40,36 +42,105 @@ export default function RoadmapCard({
   const total = child.tasks.length;
   const done = child.tasks.filter((t) => t.checked).length;
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
+  const isCompleted = total > 0 && done === total;
 
   // Pick icon based on section index, fallback to BookOpen
   const Icon = cardIcons[childIdx % cardIcons.length] || BookOpen;
 
   return (
-    <div className="relative group card bg-gradient-to-br from-indigo-500/20 via-purple-400/10 to-blue-400/10 shadow-xl rounded-2xl border-2 border-indigo-400/40 p-0 flex flex-col h-full min-h-[340px] transition-all hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/80 overflow-hidden">
+    <div
+      className={`relative group card shadow-xl rounded-2xl border-2 p-0 flex flex-col h-full min-h-[340px] transition-all duration-500 overflow-hidden ${
+        isCompleted
+          ? "bg-gradient-to-br from-emerald-400/30 via-green-300/20 to-teal-400/30 border-emerald-400/60 shadow-2xl hover:shadow-emerald-500/25 hover:-translate-y-2 animate-pulse"
+          : "bg-gradient-to-br from-indigo-500/20 via-purple-400/10 to-blue-400/10 border-indigo-400/40 hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/80"
+      }`}
+    >
       {/* Accent bar */}
-      <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-indigo-500 via-purple-500 to-blue-500 rounded-l-2xl" />
+      <div
+        className={`absolute left-0 top-0 h-full w-2 rounded-l-2xl ${
+          isCompleted
+            ? "bg-gradient-to-b from-emerald-500 via-green-400 to-teal-500 animate-pulse"
+            : "bg-gradient-to-b from-indigo-500 via-purple-500 to-blue-500"
+        }`}
+      />
+
+      {/* Completion celebration overlay */}
+      {isCompleted && (
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/10 via-transparent to-teal-400/10 animate-pulse pointer-events-none" />
+      )}
+
+      {/* Sparkles effect for completed cards */}
+      {isCompleted && (
+        <div className="absolute top-2 right-2 text-emerald-500 animate-bounce">
+          <Sparkles className="w-5 h-5" />
+        </div>
+      )}
+
       {/* Card header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-3 mb-2 bg-gradient-to-r from-indigo-500/30 to-blue-400/10 rounded-t-2xl">
+      <div
+        className={`flex items-center justify-between px-6 pt-6 pb-3 mb-2 rounded-t-2xl ${
+          isCompleted
+            ? "bg-gradient-to-r from-emerald-500/40 to-teal-400/30"
+            : "bg-gradient-to-r from-indigo-500/30 to-blue-400/10"
+        }`}
+      >
         <div className="flex items-center gap-3">
-          <Icon className="w-7 h-7 text-indigo-600 drop-shadow" />
-          <h2 className="card-title text-xl font-extrabold tracking-tight text-indigo-700 drop-shadow-sm">
+          <div
+            className={`p-2 rounded-full shadow-lg transition-all duration-300 ${
+              isCompleted
+                ? "bg-emerald-500 text-white animate-pulse"
+                : "bg-indigo-500/20"
+            }`}
+          >
+            {isCompleted ? (
+              <CheckCircle2 className="w-7 h-7" />
+            ) : (
+              <Icon className="w-7 h-7 text-indigo-600 drop-shadow" />
+            )}
+          </div>
+          <h2
+            className={`card-title text-xl font-extrabold tracking-tight drop-shadow-sm ${
+              isCompleted ? "text-emerald-800" : "text-indigo-700"
+            }`}
+          >
             {child.section}
+            {isCompleted && (
+              <span className="ml-2 text-sm font-normal text-emerald-600">
+                ✓ Complete!
+              </span>
+            )}
           </h2>
         </div>
         <div className="flex flex-col items-end">
           <div className="relative flex items-center">
             <Progress
               value={progress}
-              className="w-28 h-2 rounded-full bg-blue-200"
+              className={`w-28 h-2 rounded-full ${
+                isCompleted ? "bg-emerald-200" : "bg-blue-200"
+              }`}
             />
-            <span className="ml-2 text-xs font-bold text-indigo-700">
+            <span
+              className={`ml-2 text-xs font-bold ${
+                isCompleted ? "text-emerald-700" : "text-indigo-700"
+              }`}
+            >
               {progress}%
             </span>
           </div>
+          {isCompleted && (
+            <div className="text-xs text-emerald-600 font-semibold mt-1 animate-pulse">
+              🎉 All Done!
+            </div>
+          )}
         </div>
       </div>
+
       {/* Task list */}
-      <ul className="flex-1 space-y-3 mb-4 px-6 bg-indigo-100/10 rounded-b-2xl pt-2 pb-2">
+      <ul
+        className={`flex-1 space-y-3 mb-4 px-6 rounded-b-2xl pt-2 pb-2 ${
+          isCompleted ? "bg-emerald-50/30" : "bg-indigo-100/10"
+        }`}
+      >
         {child.tasks.map((task, taskIdx) => (
           <TaskItem
             key={task.text}
@@ -81,12 +152,23 @@ export default function RoadmapCard({
           />
         ))}
       </ul>
+
       {/* Add new task */}
       <div className="px-6 pb-6">
         {addingTaskIdx === childIdx ? (
-          <div className="flex flex-col gap-3 mt-2 p-4 bg-base-100/50 rounded-lg border border-indigo-200/30">
+          <div
+            className={`flex flex-col gap-3 mt-2 p-4 rounded-lg border ${
+              isCompleted
+                ? "bg-emerald-50/50 border-emerald-200/50"
+                : "bg-base-100/50 border-indigo-200/30"
+            }`}
+          >
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-indigo-700">
+              <h3
+                className={`text-sm font-semibold ${
+                  isCompleted ? "text-emerald-700" : "text-indigo-700"
+                }`}
+              >
                 Add New Task
               </h3>
               <button
@@ -95,7 +177,11 @@ export default function RoadmapCard({
                   setNewTask("");
                   setDeadlineDraft("");
                 }}
-                className="btn btn-ghost btn-xs btn-circle hover:bg-red-100 hover:text-red-600"
+                className={`btn btn-ghost btn-xs btn-circle ${
+                  isCompleted
+                    ? "hover:bg-emerald-100 hover:text-emerald-600"
+                    : "hover:bg-red-100 hover:text-red-600"
+                }`}
                 title="Cancel"
               >
                 <X className="w-3 h-3" />
@@ -121,7 +207,9 @@ export default function RoadmapCard({
             />
             <div className="flex gap-2">
               <button
-                className="btn btn-primary btn-sm flex-1"
+                className={`btn btn-sm flex-1 ${
+                  isCompleted ? "btn-success" : "btn-primary"
+                }`}
                 onClick={() => handleAddTask(childIdx)}
                 disabled={!newTask.trim()}
               >
@@ -142,7 +230,11 @@ export default function RoadmapCard({
           </div>
         ) : (
           <button
-            className="btn btn-outline btn-md mt-2 w-full flex items-center justify-center gap-2 group-hover:btn-primary transition-all hover:scale-[1.02]"
+            className={`btn btn-outline btn-md mt-2 w-full flex items-center justify-center gap-2 transition-all hover:scale-[1.02] ${
+              isCompleted
+                ? "border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-400 group-hover:btn-success"
+                : "group-hover:btn-primary"
+            }`}
             onClick={() => setAddingTaskIdx(childIdx)}
           >
             <Plus className="w-4 h-4" /> Add Task
