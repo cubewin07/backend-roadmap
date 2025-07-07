@@ -250,7 +250,7 @@ export default function Sidebar({
                       isSelected ? "bg-primary/20" : ""
                     }`}
                     onClick={() => {
-                      onSelectSection(phaseIdx);
+                      onSelectSection(null);
                       setExpandedPhase(isExpanded ? -1 : phaseIdx);
                     }}
                   >
@@ -347,14 +347,22 @@ export default function Sidebar({
                             (t) => t.checked
                           ).length;
                           const isSectionDone = isSectionCompleted(section);
+                          const isSectionSelected =
+                            isSelected && selectedSection === sectionIdx;
                           return (
                             <li key={section.section} className="relative">
-                              <div
-                                className={`p-3 rounded-lg transition-all text-sm ${
-                                  isSectionDone
-                                    ? "bg-emerald-100/50 text-emerald-800 border border-emerald-200/50"
-                                    : "bg-base-100/50 text-base-content border border-base-200/30 hover:bg-base-200/50"
+                              <button
+                                className={`w-full text-left p-3 rounded-lg transition-all text-sm flex flex-col border focus:outline-none ${
+                                  isSectionSelected
+                                    ? "bg-primary text-primary-foreground border-primary shadow-lg scale-[1.01]"
+                                    : isSectionDone
+                                    ? "bg-emerald-100/50 text-emerald-800 border-emerald-200/50"
+                                    : "bg-base-100/50 text-base-content border-base-200/30 hover:bg-base-200/50"
                                 }`}
+                                onClick={() => {
+                                  onSelectSection(sectionIdx);
+                                  setExpandedPhase(phaseIdx);
+                                }}
                               >
                                 <div className="flex items-center gap-2 mb-2">
                                   <div
@@ -400,7 +408,7 @@ export default function Sidebar({
                                 <div className="text-xs text-base-content/60 mt-1">
                                   {sectionDone}/{section.tasks.length} tasks
                                 </div>
-                              </div>
+                              </button>
                             </li>
                           );
                         })}
