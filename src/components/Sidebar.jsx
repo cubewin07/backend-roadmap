@@ -251,7 +251,7 @@ export default function Sidebar({
                   <div
                     className={`collapse-title flex items-center gap-3 p-4 cursor-pointer select-none relative ${
                       isSelected ? "bg-primary/20" : ""
-                    }`}
+                    } ${isCollapsed ? "justify-center items-center" : ""}`}
                     onClick={() => {
                       onSelectPhaseSection(phaseIdx, null);
                       setExpandedPhase(isExpanded ? -1 : phaseIdx);
@@ -265,7 +265,11 @@ export default function Sidebar({
                     {isCompleted && !isSelected && (
                       <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent animate-pulse pointer-events-none" />
                     )}
-                    <div className="relative z-10 flex items-center gap-3 w-full">
+                    <div
+                      className={`relative z-10 flex items-center gap-3 w-full ${
+                        isCollapsed ? "justify-center" : ""
+                      }`}
+                    >
                       <div
                         className={`p-2 rounded-full shadow-lg transition-all duration-300 ${
                           isCompleted
@@ -273,7 +277,7 @@ export default function Sidebar({
                             : isSelected
                             ? "bg-primary text-primary-foreground"
                             : "bg-primary/20"
-                        }`}
+                        } ${isCollapsed ? "mx-auto ml-[-8px]" : ""}`}
                       >
                         {isCompleted ? (
                           <CheckCircle2 className="w-5 h-5" />
