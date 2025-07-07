@@ -358,7 +358,7 @@ export default function Sidebar({
                               <button
                                 className={`w-full text-left p-3 rounded-lg transition-all text-sm flex flex-col focus:outline-none relative ${
                                   isSectionSelected
-                                    ? "bg-transparent text-accent-foreground border-2 border-accent"
+                                    ? "bg-transparent text-primary-foreground border-2 border-blue-500"
                                     : isSectionDone
                                     ? "bg-emerald-100/50 text-emerald-800 border-emerald-200/50 border"
                                     : "bg-base-200 text-base-content border-base-300 hover:bg-base-300/60 border"
