@@ -15,23 +15,25 @@ import {
   BarChart3,
   AlertTriangle,
   CheckCircle2,
+  Target,
+  Clock,
 } from "lucide-react";
 import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
 
 const sectionIcons = [
-  BookOpen, // Fundamentals
-  Database, // Databases
-  Cloud, // APIs
-  ShieldCheck, // Security
-  FlaskConical, // Testing
-  Rocket, // DevOps & Deployment
+  BookOpen, // Phase 1: Core Foundation
+  Database, // Phase 2: Production-Ready
+  Cloud, // Phase 3: Mobile Backend
+  Rocket, // Phase 4: DevOps
+  ShieldCheck, // Phase 5: Advanced Architecture
 ];
 
 export default function Sidebar({
   sections,
   selectedSection,
   onSelectSection,
+  overallProgress,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDark, setIsDark] = useState(true);
@@ -44,9 +46,9 @@ export default function Sidebar({
     setIsDark(savedIsDark);
   }, []);
 
-  // Calculate progress for each section
-  const getSectionProgress = (section) => {
-    const allTasks = section.children.flatMap((child) => child.tasks);
+  // Calculate progress for each phase
+  const getPhaseProgress = (phase) => {
+    const allTasks = phase.children.flatMap((child) => child.tasks);
     const total = allTasks.length;
     const completed = allTasks.filter((task) => task.checked).length;
     return total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -81,8 +83,8 @@ export default function Sidebar({
   };
 
   // Get overdue tasks count
-  const getOverdueCount = (section) => {
-    const allTasks = section.children.flatMap((child) => child.tasks);
+  const getOverdueCount = (phase) => {
+    const allTasks = phase.children.flatMap((child) => child.tasks);
     return allTasks.filter((task) => {
       if (!task.deadline || task.checked) return false;
       const deadline = new Date(task.deadline);
@@ -90,6 +92,14 @@ export default function Sidebar({
       today.setHours(0, 0, 0, 0);
       return deadline < today;
     }).length;
+  };
+
+  // Check if phase is completed
+  const isPhaseCompleted = (phase) => {
+    const allTasks = phase.children.flatMap((child) => child.tasks);
+    const total = allTasks.length;
+    const completed = allTasks.filter((task) => task.checked).length;
+    return total > 0 && completed === total;
   };
 
   // Keyboard navigation
@@ -147,7 +157,7 @@ export default function Sidebar({
             }`}
           >
             <div className="bg-primary rounded-full p-2 shadow-lg hover:shadow-xl transition-all">
-              <BookOpen className="w-6 h-6 text-primary-foreground" />
+              <Target className="w-6 h-6 text-primary-foreground" />
             </div>
             {!isCollapsed && (
               <div>
@@ -160,56 +170,87 @@ export default function Sidebar({
               </div>
             )}
           </div>
+
+          {/* Overall Progress */}
+          {!isCollapsed && (
+            <div className="mt-4 p-3 bg-primary/20 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-primary-foreground">
+                  Overall Progress
+                </span>
+                <span className="text-xs font-bold text-primary-foreground">
+                  {overallProgress}%
+                </span>
+              </div>
+              <Progress value={overallProgress} className="h-2 bg-primary/30" />
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 pb-4">
           <ul className="space-y-2">
-            {sections.map((sec, idx) => {
+            {sections.map((phase, idx) => {
               const Icon = sectionIcons[idx % sectionIcons.length] || BookOpen;
-              const progress = getSectionProgress(sec);
-              const overdueCount = getOverdueCount(sec);
+              const progress = getPhaseProgress(phase);
+              const overdueCount = getOverdueCount(phase);
               const isSelected = selectedSection === idx;
+              const isCompleted = isPhaseCompleted(phase);
 
               return (
-                <li key={sec.section} className="relative group">
+                <li key={phase.section} className="relative group">
                   <button
                     className={`w-full text-left p-4 rounded-xl font-semibold flex items-center gap-3 transition-all text-base shadow-sm border border-transparent hover:border-primary/40 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/40 relative overflow-hidden ${
                       isSelected
                         ? "bg-primary text-primary-foreground border-primary/80 shadow-lg scale-[1.02]"
+                        : isCompleted
+                        ? "bg-emerald-500/20 text-emerald-800 border-emerald-400/60"
                         : "bg-card/80 text-foreground backdrop-blur-sm"
                     }`}
                     onClick={() => onSelectSection(idx)}
-                    title={isCollapsed ? sec.section : undefined}
+                    title={isCollapsed ? phase.section : undefined}
                   >
                     {/* Animated background for selected */}
                     {isSelected && (
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent animate-pulse" />
                     )}
 
+                    {/* Completion celebration for completed phases */}
+                    {isCompleted && !isSelected && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent animate-pulse" />
+                    )}
+
                     <div className="relative z-10 flex items-center gap-3 w-full">
-                      <Icon
-                        className={`w-6 h-6 flex-shrink-0 ${
-                          isSelected
-                            ? "text-primary-foreground"
-                            : "text-primary"
+                      <div
+                        className={`p-2 rounded-full shadow-lg transition-all duration-300 ${
+                          isCompleted
+                            ? "bg-emerald-500 text-white"
+                            : isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/20"
                         }`}
-                      />
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-5 h-5" />
+                        ) : (
+                          <Icon className="w-5 h-5" />
+                        )}
+                      </div>
 
                       {!isCollapsed && (
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="truncate font-semibold">
-                              {sec.section.split(":")[0]}
+                              Phase {phase.phase}
                             </span>
                             <Badge
                               variant="outline"
                               className={`${getPriorityColor(
-                                sec.priority
+                                phase.priority
                               )} text-xs px-1.5 py-0.5`}
                             >
-                              {getPriorityIcon(sec.priority)}
-                              {sec.priority}
+                              {getPriorityIcon(phase.priority)}
+                              {phase.priority}
                             </Badge>
                             {overdueCount > 0 && (
                               <Badge
@@ -219,16 +260,34 @@ export default function Sidebar({
                                 {overdueCount} overdue
                               </Badge>
                             )}
+                            {isCompleted && (
+                              <Badge
+                                variant="outline"
+                                className="badge-success text-xs px-1.5 py-0.5"
+                              >
+                                ✓ Complete
+                              </Badge>
+                            )}
                           </div>
 
                           {/* Progress bar */}
                           <div className="flex items-center gap-2">
                             <Progress
                               value={progress}
-                              className="flex-1 h-1.5 bg-primary/20"
+                              className={`flex-1 h-1.5 ${
+                                isCompleted ? "bg-emerald-200" : "bg-primary/20"
+                              }`}
                             />
                             <span className="text-xs font-bold min-w-[2.5rem]">
                               {progress}%
+                            </span>
+                          </div>
+
+                          {/* Phase duration */}
+                          <div className="flex items-center gap-1 mt-1">
+                            <Clock className="w-3 h-3 text-base-content/50" />
+                            <span className="text-xs text-base-content/50">
+                              {phase.estimatedDuration}
                             </span>
                           </div>
                         </div>
@@ -243,14 +302,25 @@ export default function Sidebar({
 
                   {/* Hover tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-base-300 text-base-content px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 min-w-[200px]">
-                      <div className="font-semibold mb-1">{sec.section}</div>
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-base-300 text-base-content px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 min-w-[250px]">
+                      <div className="font-semibold mb-1">
+                        Phase {phase.phase}
+                      </div>
+                      <div className="text-xs text-base-content/70 mb-1">
+                        {phase.description}
+                      </div>
                       <div className="text-xs text-base-content/70">
-                        Progress: {progress}% | Priority: {sec.priority}
+                        Progress: {progress}% | Duration:{" "}
+                        {phase.estimatedDuration}
                       </div>
                       {overdueCount > 0 && (
                         <div className="text-xs text-error mt-1">
                           {overdueCount} overdue tasks
+                        </div>
+                      )}
+                      {isCompleted && (
+                        <div className="text-xs text-success mt-1">
+                          ✓ Phase completed!
                         </div>
                       )}
                     </div>

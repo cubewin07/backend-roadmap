@@ -1,14 +1,22 @@
 import React from "react";
 import RoadmapCard from "./RoadmapCard";
 import { Badge } from "./ui/badge";
-import { AlertTriangle, BarChart3, CheckCircle2 } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Target,
+} from "lucide-react";
 
 export default function MainContent({
   section,
   childrenSections,
+  phaseInfo,
+  phaseCompletion,
   ...handlers
 }) {
-  // Calculate overall progress for the current section
+  // Calculate overall progress for the current phase
   const getOverallProgress = () => {
     const allTasks = childrenSections.flatMap((child) => child.tasks);
     const total = allTasks.length;
@@ -35,14 +43,43 @@ export default function MainContent({
   return (
     <main className="flex-1 px-4 sm:px-6 pt-6 sm:pt-10 min-h-screen w-full transition-all duration-300">
       <div className="max-w-7xl mx-auto">
-        {/* Header with section info */}
+        {/* Header with phase info */}
         <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
-            {section}
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div
+              className={`p-3 rounded-full shadow-lg ${
+                phaseCompletion.isCompleted
+                  ? "bg-emerald-500 text-white"
+                  : "bg-primary text-primary-foreground"
+              }`}
+            >
+              {phaseCompletion.isCompleted ? (
+                <CheckCircle2 className="w-8 h-8" />
+              ) : (
+                <Target className="w-8 h-8" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {section}
+              </h1>
+              {phaseCompletion.isCompleted && (
+                <div className="text-emerald-600 font-semibold text-sm mt-1 animate-pulse">
+                  🎉 Phase Completed!
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Section summary */}
-          <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-base-content/70">
+          {/* Phase description */}
+          {phaseInfo.description && (
+            <p className="text-base-content/70 text-sm sm:text-base max-w-2xl mx-auto mb-4">
+              {phaseInfo.description}
+            </p>
+          )}
+
+          {/* Phase summary */}
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-base-content/70 mb-4">
             <div className="flex items-center gap-2">
               <span className="font-semibold">Progress:</span>
               <span className="text-primary font-bold">{overallProgress}%</span>
@@ -59,10 +96,16 @@ export default function MainContent({
               <span className="font-semibold">Sections:</span>
               <span className="font-bold">{childrenSections.length}</span>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span className="font-semibold">Duration:</span>
+              <span className="font-bold">{phaseInfo.estimatedDuration}</span>
+            </div>
           </div>
 
           {/* Priority breakdown */}
-          <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
+          <div className="flex flex-wrap justify-center items-center gap-2 mb-4">
             {priorityInfo.highCount > 0 && (
               <Badge variant="destructive" className="text-xs">
                 <AlertTriangle className="w-3 h-3 mr-1" />
@@ -82,6 +125,24 @@ export default function MainContent({
               </Badge>
             )}
           </div>
+
+          {/* Phase completion status */}
+          {phaseCompletion.isCompleted && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6 max-w-2xl mx-auto">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                <div>
+                  <h3 className="font-semibold text-emerald-800">
+                    Phase {phaseInfo.phase} Complete!
+                  </h3>
+                  <p className="text-sm text-emerald-700">
+                    Congratulations! You've completed all{" "}
+                    {phaseCompletion.total} tasks in this phase.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Cards grid */}
