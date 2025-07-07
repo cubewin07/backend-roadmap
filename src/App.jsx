@@ -746,6 +746,12 @@ export default function App() {
     );
   };
 
+  // Robust handler to select phase and section together
+  const handleSelectSection = (phaseIdx, sectionIdx) => {
+    setSelectedPhaseIdx(phaseIdx);
+    setSelectedSectionIdx(sectionIdx);
+  };
+
   const currentPhase = roadmap[selectedPhaseIdx];
   const phaseCompletion = getPhaseCompletion(currentPhase);
   const overallProgress = getOverallProgress();
@@ -756,8 +762,9 @@ export default function App() {
         sections={roadmap}
         selectedPhaseIdx={selectedPhaseIdx}
         selectedSectionIdx={selectedSectionIdx}
-        onSelectPhase={setSelectedPhaseIdx}
-        onSelectSection={setSelectedSectionIdx}
+        onSelectPhase={setSelectedPhaseIdx} // for keyboard nav, optional
+        onSelectSection={setSelectedSectionIdx} // for keyboard nav, optional
+        onSelectPhaseSection={handleSelectSection}
         overallProgress={overallProgress}
       />
       <MainContent

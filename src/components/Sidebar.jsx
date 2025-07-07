@@ -37,6 +37,7 @@ export default function Sidebar({
   selectedSectionIdx,
   onSelectPhase,
   onSelectSection,
+  onSelectPhaseSection,
   overallProgress,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -252,9 +253,8 @@ export default function Sidebar({
                       isSelected ? "bg-primary/20" : ""
                     }`}
                     onClick={() => {
-                      onSelectPhase(phaseIdx);
+                      onSelectPhaseSection(phaseIdx, null);
                       setExpandedPhase(isExpanded ? -1 : phaseIdx);
-                      onSelectSection(null); // Reset section selection when phase changes
                     }}
                   >
                     {/* Animated background for selected */}
@@ -364,8 +364,7 @@ export default function Sidebar({
                                     : "bg-base-200 text-base-content border-base-300 hover:bg-base-300/60 border"
                                 }`}
                                 onClick={() => {
-                                  onSelectPhase(phaseIdx);
-                                  onSelectSection(sectionIdx);
+                                  onSelectPhaseSection(phaseIdx, sectionIdx);
                                   setExpandedPhase(phaseIdx);
                                 }}
                               >
