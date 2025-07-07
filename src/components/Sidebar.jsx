@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   Target,
   Clock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
@@ -38,6 +40,7 @@ export default function Sidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [expandedPhase, setExpandedPhase] = useState(0); // Track which phase is expanded
 
   // Initialize theme from localStorage
   useEffect(() => {
@@ -51,6 +54,13 @@ export default function Sidebar({
     const allTasks = phase.children.flatMap((child) => child.tasks);
     const total = allTasks.length;
     const completed = allTasks.filter((task) => task.checked).length;
+    return total === 0 ? 0 : Math.round((completed / total) * 100);
+  };
+
+  // Calculate progress for each section within a phase
+  const getSectionProgress = (section) => {
+    const total = section.tasks.length;
+    const completed = section.tasks.filter((task) => task.checked).length;
     return total === 0 ? 0 : Math.round((completed / total) * 100);
   };
 
@@ -102,6 +112,13 @@ export default function Sidebar({
     return total > 0 && completed === total;
   };
 
+  // Check if section is completed
+  const isSectionCompleted = (section) => {
+    const total = section.tasks.length;
+    const completed = section.tasks.filter((task) => task.checked).length;
+    return total > 0 && completed === total;
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -124,6 +141,11 @@ export default function Sidebar({
     setIsDark(newIsDark);
     localStorage.setItem("theme", newIsDark ? "dark" : "light");
     document.documentElement.classList.toggle("dark");
+  };
+
+  // Toggle phase expansion
+  const togglePhaseExpansion = (phaseIndex) => {
+    setExpandedPhase(expandedPhase === phaseIndex ? -1 : phaseIndex);
   };
 
   return (
@@ -188,38 +210,58 @@ export default function Sidebar({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 pb-4">
-          <ul className="space-y-2">
-            {sections.map((phase, idx) => {
-              const Icon = sectionIcons[idx % sectionIcons.length] || BookOpen;
+        <nav className="flex-1 px-4 pb-4 overflow-y-auto">
+          <div className="join join-vertical w-full">
+            {sections.map((phase, phaseIdx) => {
+              const Icon =
+                sectionIcons[phaseIdx % sectionIcons.length] || BookOpen;
               const progress = getPhaseProgress(phase);
               const overdueCount = getOverdueCount(phase);
-              const isSelected = selectedSection === idx;
+              const isSelected = selectedSection === phaseIdx;
               const isCompleted = isPhaseCompleted(phase);
+              const isExpanded = expandedPhase === phaseIdx;
 
               return (
-                <li key={phase.section} className="relative group">
-                  <button
-                    className={`w-full text-left p-4 rounded-xl font-semibold flex items-center gap-3 transition-all text-base shadow-sm border border-transparent hover:border-primary/40 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/40 relative overflow-hidden ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary/80 shadow-lg scale-[1.02]"
-                        : isCompleted
-                        ? "bg-emerald-500/20 text-emerald-800 border-emerald-400/60"
-                        : "bg-card/80 text-foreground backdrop-blur-sm"
+                <div
+                  key={phase.section}
+                  className={`collapse collapse-arrow join-item mb-2 shadow-sm border border-base-200 rounded-xl transition-all duration-200 ${
+                    isExpanded ? "collapse-open" : ""
+                  } ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary/80 shadow-lg"
+                      : isCompleted
+                      ? "bg-emerald-500/20 text-emerald-800 border-emerald-400/60"
+                      : "bg-card/80 text-foreground backdrop-blur-sm"
+                  }`}
+                >
+                  {/* Phase Header */}
+                  <input
+                    type="radio"
+                    name="sidebar-accordion"
+                    checked={isExpanded}
+                    onChange={() =>
+                      setExpandedPhase(isExpanded ? -1 : phaseIdx)
+                    }
+                    className="peer"
+                    readOnly
+                  />
+                  <div
+                    className={`collapse-title flex items-center gap-3 p-4 cursor-pointer select-none relative ${
+                      isSelected ? "bg-primary/20" : ""
                     }`}
-                    onClick={() => onSelectSection(idx)}
-                    title={isCollapsed ? phase.section : undefined}
+                    onClick={() => {
+                      onSelectSection(phaseIdx);
+                      setExpandedPhase(isExpanded ? -1 : phaseIdx);
+                    }}
                   >
                     {/* Animated background for selected */}
                     {isSelected && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent animate-pulse" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent animate-pulse pointer-events-none" />
                     )}
-
                     {/* Completion celebration for completed phases */}
                     {isCompleted && !isSelected && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent animate-pulse" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent animate-pulse pointer-events-none" />
                     )}
-
                     <div className="relative z-10 flex items-center gap-3 w-full">
                       <div
                         className={`p-2 rounded-full shadow-lg transition-all duration-300 ${
@@ -236,7 +278,6 @@ export default function Sidebar({
                           <Icon className="w-5 h-5" />
                         )}
                       </div>
-
                       {!isCollapsed && (
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
@@ -269,7 +310,6 @@ export default function Sidebar({
                               </Badge>
                             )}
                           </div>
-
                           {/* Progress bar */}
                           <div className="flex items-center gap-2">
                             <Progress
@@ -282,7 +322,6 @@ export default function Sidebar({
                               {progress}%
                             </span>
                           </div>
-
                           {/* Phase duration */}
                           <div className="flex items-center gap-1 mt-1">
                             <Clock className="w-3 h-3 text-base-content/50" />
@@ -293,42 +332,85 @@ export default function Sidebar({
                         </div>
                       )}
                     </div>
-
                     {/* Selection indicator */}
                     {isSelected && (
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 h-12 w-1.5 rounded-r bg-accent shadow-lg" />
                     )}
-                  </button>
-
-                  {/* Hover tooltip for collapsed state */}
-                  {isCollapsed && (
-                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-base-300 text-base-content px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 min-w-[250px]">
-                      <div className="font-semibold mb-1">
-                        Phase {phase.phase}
-                      </div>
-                      <div className="text-xs text-base-content/70 mb-1">
-                        {phase.description}
-                      </div>
-                      <div className="text-xs text-base-content/70">
-                        Progress: {progress}% | Duration:{" "}
-                        {phase.estimatedDuration}
-                      </div>
-                      {overdueCount > 0 && (
-                        <div className="text-xs text-error mt-1">
-                          {overdueCount} overdue tasks
-                        </div>
-                      )}
-                      {isCompleted && (
-                        <div className="text-xs text-success mt-1">
-                          ✓ Phase completed!
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </li>
+                  </div>
+                  {/* Phase Sections (Accordion Content) */}
+                  <div className="collapse-content p-0">
+                    {!isCollapsed && isExpanded && (
+                      <ul className="space-y-1 p-2">
+                        {phase.children.map((section, sectionIdx) => {
+                          const sectionProgress = getSectionProgress(section);
+                          const sectionDone = section.tasks.filter(
+                            (t) => t.checked
+                          ).length;
+                          const isSectionDone = isSectionCompleted(section);
+                          return (
+                            <li key={section.section} className="relative">
+                              <div
+                                className={`p-3 rounded-lg transition-all text-sm ${
+                                  isSectionDone
+                                    ? "bg-emerald-100/50 text-emerald-800 border border-emerald-200/50"
+                                    : "bg-base-100/50 text-base-content border border-base-200/30 hover:bg-base-200/50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div
+                                    className={`p-1 rounded-full ${
+                                      isSectionDone
+                                        ? "bg-emerald-500 text-white"
+                                        : "bg-primary/20"
+                                    }`}
+                                  >
+                                    {isSectionDone ? (
+                                      <CheckCircle2 className="w-3 h-3" />
+                                    ) : (
+                                      <BookOpen className="w-3 h-3" />
+                                    )}
+                                  </div>
+                                  <span className="font-medium truncate">
+                                    {section.section}
+                                  </span>
+                                  {isSectionDone && (
+                                    <Badge
+                                      variant="outline"
+                                      className="badge-success text-xs px-1 py-0 ml-auto"
+                                    >
+                                      ✓
+                                    </Badge>
+                                  )}
+                                </div>
+                                {/* Section progress */}
+                                <div className="flex items-center gap-2">
+                                  <Progress
+                                    value={sectionProgress}
+                                    className={`flex-1 h-1 ${
+                                      isSectionDone
+                                        ? "bg-emerald-200"
+                                        : "bg-primary/20"
+                                    }`}
+                                  />
+                                  <span className="text-xs font-bold min-w-[2rem]">
+                                    {sectionProgress}%
+                                  </span>
+                                </div>
+                                {/* Task count */}
+                                <div className="text-xs text-base-content/60 mt-1">
+                                  {sectionDone}/{section.tasks.length} tasks
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </div>
               );
             })}
-          </ul>
+          </div>
         </nav>
 
         {/* User section */}
