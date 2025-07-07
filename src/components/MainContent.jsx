@@ -10,15 +10,15 @@ import {
 } from "lucide-react";
 
 export default function MainContent({
-  section,
-  childrenSections,
-  phaseInfo,
+  phase,
+  phaseIdx,
+  selectedSectionIdx,
   phaseCompletion,
   ...handlers
 }) {
   // Calculate overall progress for the current phase
   const getOverallProgress = () => {
-    const allTasks = childrenSections.flatMap((child) => child.tasks);
+    const allTasks = phase.children.flatMap((child) => child.tasks);
     const total = allTasks.length;
     const completed = allTasks.filter((task) => task.checked).length;
     return total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -26,7 +26,7 @@ export default function MainContent({
 
   // Get priority info
   const getPriorityInfo = () => {
-    const priorities = childrenSections
+    const priorities = phase.children
       .map((child) => child.tasks.map((task) => task.priority))
       .flat();
 
@@ -39,6 +39,12 @@ export default function MainContent({
 
   const overallProgress = getOverallProgress();
   const priorityInfo = getPriorityInfo();
+
+  // Determine which sections to show
+  const sectionsToShow =
+    selectedSectionIdx !== null
+      ? [phase.children[selectedSectionIdx]]
+      : phase.children;
 
   return (
     <main className="flex-1 px-4 sm:px-6 pt-6 sm:pt-10 min-h-screen w-full transition-all duration-300">
@@ -61,7 +67,7 @@ export default function MainContent({
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {section}
+                {phase.section}
               </h1>
               {phaseCompletion.isCompleted && (
                 <div className="text-emerald-600 font-semibold text-sm mt-1 animate-pulse">
@@ -72,9 +78,9 @@ export default function MainContent({
           </div>
 
           {/* Phase description */}
-          {phaseInfo.description && (
+          {phase.description && (
             <p className="text-base-content/70 text-sm sm:text-base max-w-2xl mx-auto mb-4">
-              {phaseInfo.description}
+              {phase.description}
             </p>
           )}
 
@@ -88,19 +94,19 @@ export default function MainContent({
             <div className="flex items-center gap-2">
               <span className="font-semibold">Tasks:</span>
               <span className="font-bold">
-                {childrenSections.flatMap((child) => child.tasks).length}
+                {phase.children.flatMap((child) => child.tasks).length}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="font-semibold">Sections:</span>
-              <span className="font-bold">{childrenSections.length}</span>
+              <span className="font-bold">{phase.children.length}</span>
             </div>
 
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               <span className="font-semibold">Duration:</span>
-              <span className="font-bold">{phaseInfo.estimatedDuration}</span>
+              <span className="font-bold">{phase.estimatedDuration}</span>
             </div>
           </div>
 
@@ -133,7 +139,7 @@ export default function MainContent({
                 <CheckCircle2 className="w-6 h-6 text-emerald-600" />
                 <div>
                   <h3 className="font-semibold text-emerald-800">
-                    Phase {phaseInfo.phase} Complete!
+                    Phase {phase.phase} Complete!
                   </h3>
                   <p className="text-sm text-emerald-700">
                     Congratulations! You've completed all{" "}
@@ -147,7 +153,7 @@ export default function MainContent({
 
         {/* Cards grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-4">
-          {childrenSections.map((child, childIdx) => (
+          {sectionsToShow.map((child, childIdx) => (
             <RoadmapCard
               key={child.section}
               child={child}
