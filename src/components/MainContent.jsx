@@ -158,6 +158,7 @@ export default function MainContent({
               key={child.section}
               child={child}
               childIdx={childIdx}
+              priority={phase.priority}
               {...handlers}
             />
           ))}

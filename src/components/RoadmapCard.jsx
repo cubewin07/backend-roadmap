@@ -37,6 +37,7 @@ export default function RoadmapCard({
   handleAddTask,
   handleCheck,
   handleSetDeadline,
+  priority,
 }) {
   // Progress calculation for a subtask
   const total = child.tasks.length;
@@ -47,12 +48,26 @@ export default function RoadmapCard({
   // Pick icon based on section index, fallback to BookOpen
   const Icon = cardIcons[childIdx % cardIcons.length] || BookOpen;
 
+  // Priority badge color
+  const getPriorityBadge = (priority) => {
+    switch (priority) {
+      case "HIGH":
+        return "bg-red-500 text-white";
+      case "MEDIUM":
+        return "bg-yellow-400 text-black";
+      case "LOW":
+        return "bg-green-500 text-white";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  };
+
   return (
     <div
       className={`relative group card shadow-xl rounded-2xl border-2 p-0 flex flex-col h-full min-h-[340px] transition-all duration-500 overflow-hidden ${
         isCompleted
           ? "bg-gradient-to-br from-emerald-400/30 via-green-300/20 to-teal-400/30 border-emerald-400/60 shadow-2xl hover:shadow-emerald-500/25 hover:-translate-y-2 animate-pulse"
-          : "bg-gradient-to-br from-indigo-500/20 via-purple-400/10 to-blue-400/10 border-indigo-400/40 hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/80"
+          : "bg-gradient-to-br from-indigo-900/40 via-indigo-800/30 to-blue-900/30 border-indigo-700/40 hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/80"
       }`}
     >
       {/* Accent bar */}
@@ -63,6 +78,15 @@ export default function RoadmapCard({
             : "bg-gradient-to-b from-indigo-500 via-purple-500 to-blue-500"
         }`}
       />
+
+      {/* Priority badge top right */}
+      <div
+        className={`absolute top-4 right-6 z-20 px-3 py-1 rounded-full text-xs font-bold shadow ${getPriorityBadge(
+          priority
+        )}`}
+      >
+        {priority}
+      </div>
 
       {/* Completion celebration overlay */}
       {isCompleted && (
@@ -81,7 +105,7 @@ export default function RoadmapCard({
         className={`flex items-center justify-between px-6 pt-6 pb-3 mb-2 rounded-t-2xl ${
           isCompleted
             ? "bg-gradient-to-r from-emerald-500/40 to-teal-400/30"
-            : "bg-gradient-to-r from-indigo-500/30 to-blue-400/10"
+            : "bg-gradient-to-r from-indigo-700/80 to-blue-900/60"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -95,17 +119,17 @@ export default function RoadmapCard({
             {isCompleted ? (
               <CheckCircle2 className="w-7 h-7" />
             ) : (
-              <Icon className="w-7 h-7 text-indigo-600 drop-shadow" />
+              <Icon className="w-7 h-7 text-indigo-300 drop-shadow" />
             )}
           </div>
           <h2
             className={`card-title text-xl font-extrabold tracking-tight drop-shadow-sm ${
-              isCompleted ? "text-emerald-800" : "text-indigo-700"
+              isCompleted ? "text-emerald-100" : "text-white"
             }`}
           >
             {child.section}
             {isCompleted && (
-              <span className="ml-2 text-sm font-normal text-emerald-600">
+              <span className="ml-2 text-sm font-normal text-emerald-200">
                 ✓ Complete!
               </span>
             )}
@@ -121,14 +145,14 @@ export default function RoadmapCard({
             />
             <span
               className={`ml-2 text-xs font-bold ${
-                isCompleted ? "text-emerald-700" : "text-indigo-700"
+                isCompleted ? "text-emerald-100" : "text-indigo-200"
               }`}
             >
               {progress}%
             </span>
           </div>
           {isCompleted && (
-            <div className="text-xs text-emerald-600 font-semibold mt-1 animate-pulse">
+            <div className="text-xs text-emerald-100 font-semibold mt-1 animate-pulse">
               🎉 All Done!
             </div>
           )}
@@ -138,7 +162,7 @@ export default function RoadmapCard({
       {/* Task list */}
       <ul
         className={`flex-1 space-y-3 mb-4 px-6 rounded-b-2xl pt-2 pb-2 ${
-          isCompleted ? "bg-emerald-50/30" : "bg-indigo-100/10"
+          isCompleted ? "bg-emerald-50/30" : "bg-indigo-900/20"
         }`}
       >
         {child.tasks.map((task, taskIdx) => (
@@ -166,7 +190,7 @@ export default function RoadmapCard({
             <div className="flex items-center justify-between">
               <h3
                 className={`text-sm font-semibold ${
-                  isCompleted ? "text-emerald-700" : "text-indigo-700"
+                  isCompleted ? "text-emerald-700" : "text-indigo-200"
                 }`}
               >
                 Add New Task
