@@ -378,7 +378,10 @@ export default function Sidebar({
                                       <BookOpen className="w-3 h-3" />
                                     )}
                                   </div>
-                                  <span className="font-medium truncate">
+                                  <span
+                                    className="font-medium truncate max-w-[12rem] block text-ellipsis whitespace-nowrap"
+                                    title={section.section}
+                                  >
                                     {section.section}
                                   </span>
                                   {isSectionDone && (
