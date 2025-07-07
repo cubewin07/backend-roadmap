@@ -153,15 +153,18 @@ export default function MainContent({
 
         {/* Cards grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-4">
-          {sectionsToShow.map((child, childIdx) => (
-            <RoadmapCard
-              key={child.section}
-              child={child}
-              childIdx={childIdx}
-              priority={phase.priority}
-              {...handlers}
-            />
-          ))}
+          {sectionsToShow.map((child) => {
+            const realIdx = phase.children.indexOf(child);
+            return (
+              <RoadmapCard
+                key={child.section}
+                child={child}
+                childIdx={realIdx}
+                priority={phase.priority}
+                {...handlers}
+              />
+            );
+          })}
         </div>
       </div>
     </main>
