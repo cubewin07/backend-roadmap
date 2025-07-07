@@ -629,7 +629,8 @@ function saveProgress(progress) {
 
 export default function App() {
   const [roadmap, setRoadmap] = useState(loadProgress());
-  const [selectedSection, setSelectedSection] = useState(0);
+  const [selectedPhaseIdx, setSelectedPhaseIdx] = useState(0);
+  const [selectedSectionIdx, setSelectedSectionIdx] = useState(null); // null = show all sections in phase
   const [newTask, setNewTask] = useState("");
   const [addingTaskIdx, setAddingTaskIdx] = useState(null);
   const [deadlineDraft, setDeadlineDraft] = useState("");
@@ -677,7 +678,7 @@ export default function App() {
     if (!newTask.trim()) return;
     setRoadmap((prev) =>
       prev.map((sec, sIdx) => {
-        if (sIdx !== selectedSection) return sec;
+        if (sIdx !== selectedPhaseIdx) return sec;
         return {
           ...sec,
           children: sec.children.map((child, cIdx) => {
@@ -707,7 +708,7 @@ export default function App() {
   const handleCheck = (childIdx, taskIdx) => {
     setRoadmap((prev) =>
       prev.map((sec, sIdx) => {
-        if (sIdx !== selectedSection) return sec;
+        if (sIdx !== selectedPhaseIdx) return sec;
         return {
           ...sec,
           children: sec.children.map((child, cIdx) => {
@@ -728,7 +729,7 @@ export default function App() {
   const handleSetDeadline = (childIdx, taskIdx, date) => {
     setRoadmap((prev) =>
       prev.map((sec, sIdx) => {
-        if (sIdx !== selectedSection) return sec;
+        if (sIdx !== selectedPhaseIdx) return sec;
         return {
           ...sec,
           children: sec.children.map((child, cIdx) => {
@@ -745,7 +746,7 @@ export default function App() {
     );
   };
 
-  const currentPhase = roadmap[selectedSection];
+  const currentPhase = roadmap[selectedPhaseIdx];
   const phaseCompletion = getPhaseCompletion(currentPhase);
   const overallProgress = getOverallProgress();
 
@@ -753,14 +754,16 @@ export default function App() {
     <div className="flex min-h-screen bg-base-200">
       <Sidebar
         sections={roadmap}
-        selectedSection={selectedSection}
-        onSelectSection={setSelectedSection}
+        selectedPhaseIdx={selectedPhaseIdx}
+        selectedSectionIdx={selectedSectionIdx}
+        onSelectPhase={setSelectedPhaseIdx}
+        onSelectSection={setSelectedSectionIdx}
         overallProgress={overallProgress}
       />
       <MainContent
-        section={currentPhase.section}
-        childrenSections={currentPhase.children}
-        phaseInfo={currentPhase}
+        phase={currentPhase}
+        phaseIdx={selectedPhaseIdx}
+        selectedSectionIdx={selectedSectionIdx}
         phaseCompletion={phaseCompletion}
         addingTaskIdx={addingTaskIdx}
         setAddingTaskIdx={setAddingTaskIdx}
