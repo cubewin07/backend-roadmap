@@ -6,6 +6,9 @@ const ENHANCED_ROADMAP = [
   {
     section: "Phase 1: Core Foundation (Your Current Roadmap)",
     priority: "HIGH",
+    phase: 1,
+    description: "Essential Java and Spring Boot fundamentals",
+    estimatedDuration: "4-6 weeks",
     children: [
       {
         section: "Java Language & OOP Fundamentals",
@@ -186,6 +189,9 @@ const ENHANCED_ROADMAP = [
   {
     section: "Phase 2: Production-Ready Backend",
     priority: "HIGH",
+    phase: 2,
+    description: "Production-ready features and optimizations",
+    estimatedDuration: "3-4 weeks",
     children: [
       {
         section: "API Enhancement",
@@ -337,6 +343,9 @@ const ENHANCED_ROADMAP = [
   {
     section: "Phase 3: Mobile Backend Specifics",
     priority: "HIGH",
+    phase: 3,
+    description: "Mobile-first backend features and patterns",
+    estimatedDuration: "2-3 weeks",
     children: [
       {
         section: "Mobile-First Features",
@@ -430,6 +439,9 @@ const ENHANCED_ROADMAP = [
   {
     section: "Phase 4: DevOps & Deployment",
     priority: "MEDIUM",
+    phase: 4,
+    description: "Deployment and DevOps practices",
+    estimatedDuration: "2-3 weeks",
     children: [
       {
         section: "Containerization",
@@ -517,6 +529,9 @@ const ENHANCED_ROADMAP = [
   {
     section: "Phase 5: Advanced Architecture (Optional)",
     priority: "LOW",
+    phase: 5,
+    description: "Advanced patterns and technologies",
+    estimatedDuration: "As needed",
     children: [
       {
         section: "Microservices Patterns",
@@ -598,7 +613,7 @@ const ENHANCED_ROADMAP = [
 // After Phase 3: Mobile backend with file upload and push notifications
 // After Phase 4: Fully deployed application with CI/CD
 
-const STORAGE_KEY = "roadmap-progress-v3";
+const STORAGE_KEY = "roadmap-progress-v4";
 
 function loadProgress() {
   try {
@@ -634,6 +649,29 @@ export default function App() {
     saveProgress(roadmap);
   }, [roadmap]);
 
+  // Calculate overall progress for the entire roadmap
+  const getOverallProgress = () => {
+    const allTasks = roadmap.flatMap((phase) =>
+      phase.children.flatMap((section) => section.tasks)
+    );
+    const total = allTasks.length;
+    const completed = allTasks.filter((task) => task.checked).length;
+    return total === 0 ? 0 : Math.round((completed / total) * 100);
+  };
+
+  // Get phase completion status
+  const getPhaseCompletion = (phase) => {
+    const allTasks = phase.children.flatMap((section) => section.tasks);
+    const total = allTasks.length;
+    const completed = allTasks.filter((task) => task.checked).length;
+    return {
+      total,
+      completed,
+      percentage: total === 0 ? 0 : Math.round((completed / total) * 100),
+      isCompleted: total > 0 && completed === total,
+    };
+  };
+
   // Add new task to a subtask
   const handleAddTask = (childIdx) => {
     if (!newTask.trim()) return;
@@ -648,7 +686,12 @@ export default function App() {
               ...child,
               tasks: [
                 ...child.tasks,
-                { text: newTask, checked: false, deadline: deadlineDraft },
+                {
+                  text: newTask,
+                  checked: false,
+                  deadline: deadlineDraft,
+                  priority: "MEDIUM",
+                },
               ],
             };
           }),
@@ -702,16 +745,23 @@ export default function App() {
     );
   };
 
+  const currentPhase = roadmap[selectedSection];
+  const phaseCompletion = getPhaseCompletion(currentPhase);
+  const overallProgress = getOverallProgress();
+
   return (
     <div className="flex min-h-screen bg-base-200">
       <Sidebar
         sections={roadmap}
         selectedSection={selectedSection}
         onSelectSection={setSelectedSection}
+        overallProgress={overallProgress}
       />
       <MainContent
-        section={roadmap[selectedSection].section}
-        childrenSections={roadmap[selectedSection].children}
+        section={currentPhase.section}
+        childrenSections={currentPhase.children}
+        phaseInfo={currentPhase}
+        phaseCompletion={phaseCompletion}
         addingTaskIdx={addingTaskIdx}
         setAddingTaskIdx={setAddingTaskIdx}
         newTask={newTask}
