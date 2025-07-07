@@ -650,6 +650,17 @@ export default function App() {
     saveProgress(roadmap);
   }, [roadmap]);
 
+  // Listen for localStorage changes from other tabs/windows
+  useEffect(() => {
+    function handleStorageChange(e) {
+      if (e.key === STORAGE_KEY) {
+        setRoadmap(loadProgress());
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   // Calculate overall progress for the entire roadmap
   const getOverallProgress = () => {
     const allTasks = roadmap.flatMap((phase) =>
