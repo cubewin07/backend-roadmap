@@ -33,7 +33,9 @@ const sectionIcons = [
 
 export default function Sidebar({
   sections,
-  selectedSection,
+  selectedPhaseIdx,
+  selectedSectionIdx,
+  onSelectPhase,
   onSelectSection,
   overallProgress,
 }) {
@@ -124,16 +126,16 @@ export default function Sidebar({
     const handleKeyDown = (e) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        onSelectSection(Math.min(selectedSection + 1, sections.length - 1));
+        onSelectSection(Math.min(selectedSectionIdx + 1, sections.length - 1));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        onSelectSection(Math.max(selectedSection - 1, 0));
+        onSelectSection(Math.max(selectedSectionIdx - 1, 0));
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [selectedSection, sections.length, onSelectSection]);
+  }, [selectedSectionIdx, sections.length, onSelectSection]);
 
   // Toggle theme
   const toggleTheme = () => {
@@ -217,7 +219,7 @@ export default function Sidebar({
                 sectionIcons[phaseIdx % sectionIcons.length] || BookOpen;
               const progress = getPhaseProgress(phase);
               const overdueCount = getOverdueCount(phase);
-              const isSelected = selectedSection === phaseIdx;
+              const isSelected = selectedPhaseIdx === phaseIdx;
               const isCompleted = isPhaseCompleted(phase);
               const isExpanded = expandedPhase === phaseIdx;
 
@@ -250,8 +252,9 @@ export default function Sidebar({
                       isSelected ? "bg-primary/20" : ""
                     }`}
                     onClick={() => {
-                      onSelectSection(null);
+                      onSelectPhase(phaseIdx);
                       setExpandedPhase(isExpanded ? -1 : phaseIdx);
+                      onSelectSection(null); // Reset section selection when phase changes
                     }}
                   >
                     {/* Animated background for selected */}
@@ -348,18 +351,20 @@ export default function Sidebar({
                           ).length;
                           const isSectionDone = isSectionCompleted(section);
                           const isSectionSelected =
-                            isSelected && selectedSection === sectionIdx;
+                            selectedPhaseIdx === phaseIdx &&
+                            selectedSectionIdx === sectionIdx;
                           return (
                             <li key={section.section} className="relative">
                               <button
-                                className={`w-full text-left p-3 rounded-lg transition-all text-sm flex flex-col border focus:outline-none ${
+                                className={`w-full text-left p-3 rounded-lg transition-all text-sm flex flex-col focus:outline-none relative ${
                                   isSectionSelected
-                                    ? "bg-primary text-primary-foreground border-primary shadow-lg scale-[1.01]"
+                                    ? "bg-transparent text-accent-foreground border-2 border-accent"
                                     : isSectionDone
-                                    ? "bg-emerald-100/50 text-emerald-800 border-emerald-200/50"
-                                    : "bg-base-100/50 text-base-content border-base-200/30 hover:bg-base-200/50"
+                                    ? "bg-emerald-100/50 text-emerald-800 border-emerald-200/50 border"
+                                    : "bg-base-200 text-base-content border-base-300 hover:bg-base-300/60 border"
                                 }`}
                                 onClick={() => {
+                                  onSelectPhase(phaseIdx);
                                   onSelectSection(sectionIdx);
                                   setExpandedPhase(phaseIdx);
                                 }}
