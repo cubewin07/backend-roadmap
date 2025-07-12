@@ -66,7 +66,7 @@ export default function MainContent({
               )}
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent drop-shadow-lg">
                 {phase.section}
               </h1>
               {phaseCompletion.isCompleted && (
@@ -85,48 +85,63 @@ export default function MainContent({
           )}
 
           {/* Phase summary */}
-          <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-base-content/70 mb-4">
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm mb-4  rounded-lg py-3 px-2 shadow-inner">
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Progress:</span>
-              <span className="text-primary font-bold">{overallProgress}%</span>
+              <span className="font-semibold text-blue-400">Progress:</span>
+              <span className="font-bold text-blue-300">
+                {overallProgress}%
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Tasks:</span>
-              <span className="font-bold">
+              <span className="font-semibold text-green-400">Tasks:</span>
+              <span className="font-bold text-green-300">
                 {phase.children.flatMap((child) => child.tasks).length}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Sections:</span>
-              <span className="font-bold">{phase.children.length}</span>
+              <span className="font-semibold text-purple-400">Sections:</span>
+              <span className="font-bold text-purple-300">
+                {phase.children.length}
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span className="font-semibold">Duration:</span>
-              <span className="font-bold">{phase.estimatedDuration}</span>
+              <Clock className="w-4 h-4 text-orange-400" />
+              <span className="font-semibold text-orange-400">Duration:</span>
+              <span className="font-bold text-orange-300">
+                {phase.estimatedDuration}
+              </span>
             </div>
           </div>
 
           {/* Priority breakdown */}
           <div className="flex flex-wrap justify-center items-center gap-2 mb-4">
             {priorityInfo.highCount > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                <AlertTriangle className="w-3 h-3 mr-1" />
+              <Badge
+                variant="destructive"
+                className="text-xs bg-red-600 text-white hover:bg-red-700 transition-colors duration-150"
+              >
+                <AlertTriangle className="w-3 h-3 mr-1 text-yellow-200" />
                 {priorityInfo.highCount} High Priority
               </Badge>
             )}
             {priorityInfo.mediumCount > 0 && (
-              <Badge variant="outline" className="text-xs badge-warning">
-                <BarChart3 className="w-3 h-3 mr-1" />
+              <Badge
+                variant="outline"
+                className="text-xs bg-yellow-400 text-yellow-900 border-yellow-400 hover:bg-yellow-500 hover:text-yellow-950 transition-colors duration-150"
+              >
+                <BarChart3 className="w-3 h-3 mr-1 text-yellow-700" />
                 {priorityInfo.mediumCount} Medium Priority
               </Badge>
             )}
             {priorityInfo.lowCount > 0 && (
-              <Badge variant="outline" className="text-xs badge-success">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
+              <Badge
+                variant="outline"
+                className="text-xs bg-green-400 text-green-900 border-green-400 hover:bg-green-500 hover:text-green-950 transition-colors duration-150"
+              >
+                <CheckCircle2 className="w-3 h-3 mr-1 text-green-700" />
                 {priorityInfo.lowCount} Low Priority
               </Badge>
             )}
