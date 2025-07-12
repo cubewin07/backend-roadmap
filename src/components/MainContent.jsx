@@ -39,6 +39,7 @@ export default function MainContent({
 
   const overallProgress = getOverallProgress();
   const priorityInfo = getPriorityInfo();
+  console.log(priorityInfo);
 
   // Determine which sections to show
   const sectionsToShow =
@@ -170,12 +171,27 @@ export default function MainContent({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-4">
           {sectionsToShow.map((child) => {
             const realIdx = phase.children.indexOf(child);
+            // Calculate median priority for this child section
+            const priorities = child.tasks.map((task) => task.priority);
+            const priorityOrder = { HIGH: 1, MEDIUM: 2, LOW: 3 };
+            const sorted = priorities
+              .map((p) => priorityOrder[p] ?? 99)
+              .sort((a, b) => a - b);
+            let medianPriority = "LOW";
+            if (sorted.length > 0) {
+              const medianIdx = Math.floor((sorted.length - 1) / 2);
+              const medianValue = sorted[medianIdx];
+              medianPriority =
+                Object.keys(priorityOrder).find(
+                  (k) => priorityOrder[k] === medianValue
+                ) || "LOW";
+            }
             return (
               <RoadmapCard
                 key={child.section}
                 child={child}
                 childIdx={realIdx}
-                priority={phase.priority}
+                priority={medianPriority}
                 {...handlers}
               />
             );
